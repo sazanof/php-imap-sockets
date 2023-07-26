@@ -1,0 +1,12 @@
+<component name="CopyrightManager">
+  <settings default="Mikhail Sazanov copyright">
+    <module2copyright>
+      <element module="only src" copyright="Mikhail Sazanov copyright" />
+    </module2copyright>
+    <LanguageOptions name="PHP">
+      <option name="fileTypeOverride" value="3" />
+      <option name="separateBefore" value="true" />
+      <option name="lenBefore" value="1" />
+    </LanguageOptions>
+  </settings>
+</component>

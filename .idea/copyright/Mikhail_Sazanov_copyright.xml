@@ -1,0 +1,6 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="@copyright Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;, &quot;&amp;#36;today.year&quot;)&amp;#36;today.year, Mikhail Sazanov &lt;m@sazanof.ru&gt;&#10;@author Mikhail Sazanov &lt;m@sazanof.ru&gt;&#10;@license GNU AGPL version 3 or any later version" />
+    <option name="myName" value="Mikhail Sazanov copyright" />
+  </copyright>
+</component>
