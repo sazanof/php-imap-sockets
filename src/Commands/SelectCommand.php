@@ -9,5 +9,5 @@ namespace Sazanof\PhpImapSockets\Commands;
 
 class SelectCommand extends Command
 {
-
+	protected string $name = 'SELECT';
 }

@@ -8,6 +8,7 @@
 namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\Collection;
+use Sazanof\PhpImapSockets\Collections\MailboxCollection;
 use Sazanof\PhpImapSockets\Connection;
 use Sazanof\PhpImapSockets\Response;
 
@@ -25,6 +26,7 @@ class Mailbox
 	protected bool $isSent = false;
 	protected bool $isJunk = false;
 	protected bool $isArchive = false;
+	protected ?MailboxCollection $children = null;
 
 	const SPECIAL_ATTRIBUTES = [
 		'haschildren' => ['\haschildren'],
@@ -49,7 +51,19 @@ class Mailbox
 		$this->isJunk = $this->isJunk();
 		$this->isSent = $this->isSent();
 		$this->isTrash = $this->isTrash();
-		dump($this);
+	}
+
+	public function getChildren()
+	{
+		return $this->children;
+	}
+
+	/**
+	 * @param MailboxCollection|null $children
+	 */
+	public function setChildren(?MailboxCollection $children): void
+	{
+		$this->children = $children;
 	}
 
 	public function parseAttributes(string $attributesString)
@@ -64,42 +78,46 @@ class Mailbox
 		preg_match('/\((.*)\) "(.)" (.+)/', $line, $matches);
 		$this->parseAttributes($matches[1]);
 		$this->setDelimiter($matches[2]);
-		$this->setPath($this->decodeName($matches[3]));
-		//dump($this->attributes->toArray());
+		$path = $this->decodeName($matches[3]);
+		$path = rtrim($path, '"');
+		$path = ltrim($path, '"');
+		$this->setPath($path);
+		$pathArray = explode($this->getDelimiter(), $this->getPath());
+		$this->setName(!empty($pathArray) ? end($pathArray) : $this->getPath());
 	}
 
-	protected function hasChildren()
+	public function hasChildren()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['haschildren'], $this->attributes->toArray()));
 	}
 
-	protected function isTrash()
+	public function isTrash()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['trash'], $this->attributes->toArray()));
 	}
 
-	protected function isSent()
+	public function isSent()
 	{
 
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['sent'], $this->attributes->toArray()));
 	}
 
-	protected function isDrafts()
+	public function isDrafts()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['drafts'], $this->attributes->toArray()));
 	}
 
-	protected function isJunk()
+	public function isJunk()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['junk'], $this->attributes->toArray()));
 	}
 
-	protected function isArchive()
+	public function isArchive()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['archive'], $this->attributes->toArray()));
 	}
 
-	protected function decodeName(string $name)
+	public function decodeName(string $name)
 	{
 		return imap_mutf7_to_utf8($name);
 	}

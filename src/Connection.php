@@ -15,8 +15,10 @@ use Sazanof\PhpImapSockets\Commands\Command;
 use Sazanof\PhpImapSockets\Commands\ListCommand;
 use Sazanof\PhpImapSockets\Commands\LoginCommand;
 use Sazanof\PhpImapSockets\Commands\LogoutCommand;
+use Sazanof\PhpImapSockets\Commands\SelectCommand;
 use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
 use Sazanof\PhpImapSockets\Exceptions\LoginFailedException;
+use Sazanof\PhpImapSockets\Models\Mailbox;
 use Sazanof\PhpImapSockets\Response;
 use Sazanof\PhpImapSockets\Socket;
 
@@ -296,25 +298,42 @@ class Connection
 	public function logout(): void
 	{
 		$this->command(LogoutCommand::class);
-
 		$this->close();
 	}
 
-
-	public function listMailboxes(string $root = '""', string $searchQuery = '*', bool $hierarchical = false)
+	/**
+	 * List mailboxes with given criteria
+	 * @param string $root
+	 * @param string $searchQuery
+	 * @return MailboxCollection
+	 * @throws ReflectionException
+	 */
+	public function listMailboxes(string $root = '', string $searchQuery = '*')
 	{
-		if ($hierarchical) {
+		return new MailboxCollection($this->command(ListCommand::class, [$root, $searchQuery]));
+	}
 
-		} else {
-			return new MailboxCollection($this->command(ListCommand::class, [$root, $searchQuery]));
-		}
-
+	/**
+	 * List mailboxes as tree whith children
+	 * @param $startPath
+	 * @return MailboxCollection
+	 * @throws ReflectionException
+	 */
+	public function listMailboxesTree($startPath = '')
+	{
+		$mailboxCollection = new MailboxCollection($this->command(ListCommand::class, [$startPath, '%']));
+		$mailboxCollection->map(function ($mailbox) {
+			/** @var Mailbox $mailbox */
+			if ($mailbox->hasChildren()) {
+				$mailbox->setChildren($this->listMailboxesTree($mailbox->getPath() . $mailbox->getDelimiter()));
+			}
+		});
+		return $mailboxCollection;
 	}
 
 	public function select($mailboxName)
 	{
-		$response = $this->command("SELECT {$mailboxName}");
-
+		$response = $this->command(SelectCommand::class, [$mailboxName]);
 		return $response->isOk() ? $response : null;
 	}
 

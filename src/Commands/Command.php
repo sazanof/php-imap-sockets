@@ -47,6 +47,7 @@ class Command
 	protected static function create(array $args = null)
 	{
 		$instance = new static(...$args);
+
 		return $instance->arguments === '' ? $instance->name : $instance->name . ' ' . $instance->arguments;
 	}
 

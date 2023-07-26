@@ -12,13 +12,16 @@ class ListCommand extends Command
 
 	protected string $name = 'LIST';
 	protected string $arguments = '*';
-	protected string $root = '""';
+	protected string $root = '';
 	protected string $search = '*';
 
 	public function __construct(string $root, string $search)
 	{
 		$this->root = $root;
 		$this->search = $search;
+		if (str_contains($this->root, ' ') || strlen($this->root) === 0) {
+			$this->root = '"' . $this->root . '"';
+		}
 		$this->setArguments($this->root . ' ' . $this->search);
 	}
 }

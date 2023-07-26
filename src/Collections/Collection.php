@@ -9,7 +9,7 @@ namespace Sazanof\PhpImapSockets\Collections;
 
 class Collection
 {
-	protected array $collection;
+	protected array $collection = [];
 
 	public function add(mixed $item)
 	{
@@ -31,9 +31,12 @@ class Collection
 
 	}
 
-	public function map()
+	public function map(\Closure $closure)
 	{
-
+		array_map(function ($item) use ($closure) {
+			$closure($item);
+		}, $this->collection);
+		return $this;
 	}
 
 	public function find()
