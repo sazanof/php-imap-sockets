@@ -308,20 +308,23 @@ class Connection
 	 * @return MailboxCollection
 	 * @throws ReflectionException
 	 */
-	public function listMailboxes(string $root = '', string $searchQuery = '*')
+	public function listMailboxes(string $root = '', string $searchQuery = '*'): MailboxCollection
 	{
 		return new MailboxCollection($this->command(ListCommand::class, [$root, $searchQuery]));
 	}
 
 	/**
 	 * List mailboxes as tree whith children
-	 * @param $startPath
+	 * @param string $startPath
 	 * @return MailboxCollection
 	 * @throws ReflectionException
 	 */
-	public function listMailboxesTree($startPath = '')
+	public function listMailboxesTree(string $startPath = ''): MailboxCollection
 	{
-		$mailboxCollection = new MailboxCollection($this->command(ListCommand::class, [$startPath, '%']));
+		$mailboxCollection = new MailboxCollection(
+			$this->command(ListCommand::class, [$startPath, '%']),
+			$this
+		);
 		$mailboxCollection->map(function ($mailbox) {
 			/** @var Mailbox $mailbox */
 			if ($mailbox->hasChildren()) {
@@ -331,15 +334,14 @@ class Connection
 		return $mailboxCollection;
 	}
 
-	public function select($mailboxName)
+	/**
+	 * @param $mailboxName
+	 * @return Response|null
+	 * @throws ReflectionException
+	 */
+	public function select($mailboxName): ?Response
 	{
 		$response = $this->command(SelectCommand::class, [$mailboxName]);
 		return $response->isOk() ? $response : null;
-	}
-
-
-	public function inbox()
-	{
-		return $this->select('INBOX');
 	}
 }

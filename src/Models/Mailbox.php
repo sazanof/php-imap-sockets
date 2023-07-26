@@ -9,13 +9,14 @@ namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
+use Sazanof\PhpImapSockets\Commands\ExamineCommand;
 use Sazanof\PhpImapSockets\Connection;
 use Sazanof\PhpImapSockets\Response;
 
 class Mailbox
 {
 	protected Response $response;
-	protected Connection $connection;
+	protected ?Connection $connection = null;
 	protected Collection $attributes;
 	protected string $name;
 	protected string $delimiter;
@@ -122,6 +123,11 @@ class Mailbox
 		return imap_mutf7_to_utf8($name);
 	}
 
+	public function examine()
+	{
+		$this->getConnection()->enableDebug()->command(ExamineCommand::class, [$this->getPath()]);
+	}
+
 	/**
 	 * @param Collection $attributes
 	 */
@@ -156,10 +162,12 @@ class Mailbox
 
 	/**
 	 * @param Connection $connection
+	 * @return Mailbox
 	 */
-	public function setConnection(Connection $connection): void
+	public function setConnection(Connection $connection): static
 	{
 		$this->connection = $connection;
+		return $this;
 	}
 
 	/**
