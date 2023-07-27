@@ -7,14 +7,12 @@
 
 namespace Sazanof\PhpImapSockets\Commands;
 
-use Sazanof\PhpImapSockets\Query;
-
-class SearchCommand extends Command
+class FetchCommand extends Command
 {
-	protected string $name = 'SEARCH';
+	protected string $name = 'FETCH';
 
-	public function __construct(Query $query)
+	public function __construct(array $uids)
 	{
-		$this->setArguments($query->toQueryString());
+		$this->setArguments(implode(',', $uids));
 	}
 }

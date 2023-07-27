@@ -10,12 +10,18 @@ namespace Sazanof\PhpImapSockets\Models;
 use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
 use Sazanof\PhpImapSockets\Commands\ExamineCommand;
+use Sazanof\PhpImapSockets\Commands\SearchCommand;
 use Sazanof\PhpImapSockets\Connection;
+use Sazanof\PhpImapSockets\Query;
 use Sazanof\PhpImapSockets\Response\ExamineResponse;
 use Sazanof\PhpImapSockets\Response\Response;
+use Sazanof\PhpImapSockets\Traits\FromResponse;
+use Sazanof\PhpImapSockets\Traits\PrepareArgument;
 
 class Mailbox
 {
+	use PrepareArgument;
+
 	protected Response $response;
 	protected ?Connection $connection = null;
 	protected Collection $attributes;
@@ -105,6 +111,17 @@ class Mailbox
 		$this->exists = $response->exists;
 
 		return $this;
+	}
+
+	public function select()
+	{
+		$this->connection->select($this->imapUtf8ToMutf7($this->path));
+		return $this;
+	}
+
+	public function search(Query $query)
+	{
+		return $this->connection->command(SearchCommand::class, [$query]);
 	}
 
 	public function hasChildren()

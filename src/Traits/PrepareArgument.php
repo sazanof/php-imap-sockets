@@ -18,7 +18,7 @@ trait PrepareArgument
 		if ((str_contains($argument, ' ') && strlen($argument) > 0) || strlen($argument) === 0) {
 			$argument = '"' . $argument . '"';
 		}
-		return $this->imapUtf8ToMutf7($argument);
+		return $argument;
 	}
 
 	/**
