@@ -8,6 +8,7 @@
 namespace Sazanof\PhpImapSockets\Collections;
 
 use Sazanof\PhpImapSockets\Connection;
+use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
 use Sazanof\PhpImapSockets\Models\Mailbox;
 use Sazanof\PhpImapSockets\Response\Response;
 use Sazanof\PhpImapSockets\Traits\FromResponse;
@@ -21,8 +22,16 @@ class MailboxCollection extends Collection
 	 */
 	protected ?array $lines;
 
+	/**
+	 * @param Response $response
+	 * @param Connection|null $connection
+	 * @throws ConnectionException
+	 */
 	public function __construct(Response $response, Connection $connection = null)
 	{
+		if (is_null($connection)) {
+			throw new ConnectionException('Connection must be specified!');
+		}
 		$this->lines = $this->getLines($response);
 		if (!is_null($this->lines)) {
 			foreach ($this->lines as $line) {

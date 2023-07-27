@@ -32,7 +32,7 @@ class Mailbox
 	protected int $exists = 0;
 	protected int $recent = 0;
 	protected int $uidnext = 0;
-	protected int $uidvalidiry = 0;
+	protected int $uidvalidity = 0;
 	protected int $unseen = 0;
 
 	const SPECIAL_ATTRIBUTES = [
@@ -98,7 +98,7 @@ class Mailbox
 		$response = new ExamineResponse(
 			$this->getConnection()->command(ExamineCommand::class, [$this->getPath()])
 		);
-		$this->uidvalidiry = $response->uidvalidiry;
+		$this->uidvalidity = $response->uidvalidiry;
 		$this->uidnext = $response->uidnext;
 		$this->unseen = $response->unseen;
 		$this->recent = $response->recent;
@@ -276,8 +276,8 @@ class Mailbox
 	/**
 	 * @return int
 	 */
-	public function getUidvalidiry(): int
+	public function getUidvalidity(): int
 	{
-		return $this->uidvalidiry;
+		return $this->uidvalidity;
 	}
 }

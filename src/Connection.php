@@ -20,6 +20,7 @@ use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
 use Sazanof\PhpImapSockets\Exceptions\LoginFailedException;
 use Sazanof\PhpImapSockets\Models\Mailbox;
 use Sazanof\PhpImapSockets\Response\Response;
+use Sazanof\PhpImapSockets\Response\SelectResponse;
 use Sazanof\PhpImapSockets\Socket;
 
 /**
@@ -307,10 +308,21 @@ class Connection
 	 * @param string $searchQuery
 	 * @return MailboxCollection
 	 * @throws ReflectionException
+	 * @throws ConnectionException
 	 */
 	public function listMailboxes(string $root = '', string $searchQuery = '*'): MailboxCollection
 	{
-		return new MailboxCollection($this->command(ListCommand::class, [$root, $searchQuery]));
+		return new MailboxCollection($this->command(ListCommand::class, [$root, $searchQuery]), $this);
+	}
+
+	/**
+	 * @param string $path
+	 * @return Mailbox|null
+	 * @throws ReflectionException
+	 */
+	public function getMailboxByPath(string $path)
+	{
+		return $this->listMailboxes($path, '%')->first();
 	}
 
 	/**
@@ -336,12 +348,12 @@ class Connection
 
 	/**
 	 * @param $mailboxName
-	 * @return Response|null
+	 * @return SelectResponse|null
 	 * @throws ReflectionException
 	 */
-	public function select($mailboxName): ?Response
+	public function select($mailboxName): ?SelectResponse
 	{
 		$response = $this->command(SelectCommand::class, [$mailboxName]);
-		return $response->isOk() ? $response : null;
+		return $response->isOk() ? new SelectResponse($response) : null;
 	}
 }

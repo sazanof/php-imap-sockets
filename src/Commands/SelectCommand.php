@@ -7,7 +7,16 @@
 
 namespace Sazanof\PhpImapSockets\Commands;
 
+use Sazanof\PhpImapSockets\Traits\PrepareArgument;
+
 class SelectCommand extends Command
 {
+	use PrepareArgument;
+
 	protected string $name = 'SELECT';
+
+	public function __construct(string $folder)
+	{
+		$this->setArguments($this->addQuotes($folder));
+	}
 }

@@ -7,14 +7,17 @@
 
 namespace Sazanof\PhpImapSockets\Commands;
 
+use Sazanof\PhpImapSockets\Traits\PrepareArgument;
+
 class ExamineCommand extends Command
 {
+	use PrepareArgument;
+
 	protected string $name = 'EXAMINE';
 
 	public function __construct(string $root)
 	{
 
-		$root = '"' . $root . '"';
-		$this->setArguments(imap_utf8_to_mutf7($root));
+		$this->setArguments($this->addQuotes($root));
 	}
 }

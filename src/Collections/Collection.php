@@ -48,4 +48,9 @@ class Collection
 	{
 		return $this->collection;
 	}
+
+	public function first()
+	{
+		return count($this->collection) > 0 ? $this->collection[0] : null;
+	}
 }
