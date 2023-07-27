@@ -11,7 +11,8 @@ use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
 use Sazanof\PhpImapSockets\Commands\ExamineCommand;
 use Sazanof\PhpImapSockets\Connection;
-use Sazanof\PhpImapSockets\Response;
+use Sazanof\PhpImapSockets\Response\ExamineResponse;
+use Sazanof\PhpImapSockets\Response\Response;
 
 class Mailbox
 {
@@ -28,6 +29,11 @@ class Mailbox
 	protected bool $isJunk = false;
 	protected bool $isArchive = false;
 	protected ?MailboxCollection $children = null;
+	protected int $exists = 0;
+	protected int $recent = 0;
+	protected int $uidnext = 0;
+	protected int $uidvalidiry = 0;
+	protected int $unseen = 0;
 
 	const SPECIAL_ATTRIBUTES = [
 		'haschildren' => ['\haschildren'],
@@ -87,6 +93,20 @@ class Mailbox
 		$this->setName(!empty($pathArray) ? end($pathArray) : $this->getPath());
 	}
 
+	public function examine()
+	{
+		$response = new ExamineResponse(
+			$this->getConnection()->command(ExamineCommand::class, [$this->getPath()])
+		);
+		$this->uidvalidiry = $response->uidvalidiry;
+		$this->uidnext = $response->uidnext;
+		$this->unseen = $response->unseen;
+		$this->recent = $response->recent;
+		$this->exists = $response->exists;
+
+		return $this;
+	}
+
 	public function hasChildren()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['haschildren'], $this->attributes->toArray()));
@@ -121,11 +141,6 @@ class Mailbox
 	public function decodeName(string $name)
 	{
 		return imap_mutf7_to_utf8($name);
-	}
-
-	public function examine()
-	{
-		$this->getConnection()->enableDebug()->command(ExamineCommand::class, [$this->getPath()]);
 	}
 
 	/**
@@ -224,5 +239,45 @@ class Mailbox
 	public function getResponse(): Response
 	{
 		return $this->response;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getUnseen(): int
+	{
+		return $this->unseen;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getExists(): int
+	{
+		return $this->exists;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getRecent(): int
+	{
+		return $this->recent;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getUidnext(): int
+	{
+		return $this->uidnext;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getUidvalidiry(): int
+	{
+		return $this->uidvalidiry;
 	}
 }

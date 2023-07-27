@@ -9,19 +9,12 @@ namespace Sazanof\PhpImapSockets\Collections;
 
 use Sazanof\PhpImapSockets\Connection;
 use Sazanof\PhpImapSockets\Models\Mailbox;
-use Sazanof\PhpImapSockets\Response;
+use Sazanof\PhpImapSockets\Response\Response;
 use Sazanof\PhpImapSockets\Traits\FromResponse;
 
 class MailboxCollection extends Collection
 {
 	use FromResponse;
-
-	/**
-	 * @var string $tag
-	 */
-	protected string $tag;
-
-	protected ?Connection $connection = null;
 
 	/**
 	 * @var array|null

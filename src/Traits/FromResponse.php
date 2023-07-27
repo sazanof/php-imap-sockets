@@ -7,7 +7,7 @@
 
 namespace Sazanof\PhpImapSockets\Traits;
 
-use Sazanof\PhpImapSockets\Response;
+use Sazanof\PhpImapSockets\Response\Response;
 
 trait FromResponse
 {

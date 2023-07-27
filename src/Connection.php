@@ -19,7 +19,7 @@ use Sazanof\PhpImapSockets\Commands\SelectCommand;
 use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
 use Sazanof\PhpImapSockets\Exceptions\LoginFailedException;
 use Sazanof\PhpImapSockets\Models\Mailbox;
-use Sazanof\PhpImapSockets\Response;
+use Sazanof\PhpImapSockets\Response\Response;
 use Sazanof\PhpImapSockets\Socket;
 
 /**

@@ -5,7 +5,7 @@
  * @license GNU AGPL version 3 or any later version
  */
 
-namespace Sazanof\PhpImapSockets;
+namespace Sazanof\PhpImapSockets\Response;
 
 class Response
 {

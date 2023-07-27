@@ -7,7 +7,7 @@
 
 namespace Sazanof\PhpImapSockets\Exceptions;
 
-use Sazanof\PhpImapSockets\Response;
+use Sazanof\PhpImapSockets\Response\Response;
 
 class ImapException extends \Exception
 {
