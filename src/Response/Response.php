@@ -7,6 +7,9 @@
 
 namespace Sazanof\PhpImapSockets\Response;
 
+use Sazanof\PhpImapSockets\Collections\MessageCollection;
+use Sazanof\PhpImapSockets\Models\Message;
+
 class Response
 {
 	/**
@@ -106,5 +109,22 @@ class Response
 	public function error()
 	{
 		return $this->lastLine();
+	}
+
+	/**
+	 * @param $className
+	 * @return mixed
+	 * @throws \ReflectionException
+	 */
+	public function as($className)
+	{
+		$class = new \ReflectionClass($className);
+		return $class->newInstance($this->line(0));
+	}
+
+	public function asCollection(string $collectionClassName)
+	{
+		$class = new \ReflectionClass($collectionClassName);
+		return $class->newInstance($this);
 	}
 }

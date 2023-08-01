@@ -7,12 +7,15 @@
 
 namespace Sazanof\PhpImapSockets\Models;
 
-use Sazanof\PhpImapSockets\Collections\Collection;
-
 class Message
 {
-	protected Collection $flags;
-	protected bool $hasAttachments = false;
-	protected \DateTime $sentAt;
+	protected int $messageUid;
+	protected string $from;
+	protected string $to;
 	protected string $subject;
+
+	public function __construct()
+	{
+
+	}
 }

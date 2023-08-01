@@ -7,13 +7,13 @@
 
 namespace Sazanof\PhpImapSockets\Commands;
 
-use Sazanof\PhpImapSockets\Query;
+use Sazanof\PhpImapSockets\Query\SearchQuery;
 
 class SearchCommand extends Command
 {
 	protected string $name = 'SEARCH';
 
-	public function __construct(Query $query)
+	public function __construct(SearchQuery $query)
 	{
 		$this->setArguments($query->toQueryString());
 	}

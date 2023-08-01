@@ -7,8 +7,12 @@
 
 namespace Sazanof\PhpImapSockets\Commands;
 
+use Sazanof\PhpImapSockets\Traits\PrepareArgument;
+
 class ListCommand extends Command
 {
+
+	use PrepareArgument;
 
 	protected string $name = 'LIST';
 	protected string $arguments = '*';
@@ -19,8 +23,8 @@ class ListCommand extends Command
 	{
 		$this->root = $root;
 		$this->search = $search;
-		if (str_contains($this->root, ' ') || strlen($this->root) === 0) {
-			$this->root = '"' . $this->root . '"';
+		if (str_contains($this->root, ' ') || str_contains($this->root, '-') || strlen($this->root) === 0) {
+			$this->root = '"' . $this->addQuotes($this->root) . '"';
 		}
 		$this->setArguments($this->root . ' ' . $this->search);
 	}

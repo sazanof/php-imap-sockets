@@ -10,12 +10,14 @@ namespace Sazanof\PhpImapSockets\Models;
 use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
 use Sazanof\PhpImapSockets\Commands\ExamineCommand;
+use Sazanof\PhpImapSockets\Commands\FetchCommand;
 use Sazanof\PhpImapSockets\Commands\SearchCommand;
 use Sazanof\PhpImapSockets\Connection;
-use Sazanof\PhpImapSockets\Query;
+use Sazanof\PhpImapSockets\Query\FetchQuery;
+use Sazanof\PhpImapSockets\Query\SearchQuery;
 use Sazanof\PhpImapSockets\Response\ExamineResponse;
 use Sazanof\PhpImapSockets\Response\Response;
-use Sazanof\PhpImapSockets\Traits\FromResponse;
+use Sazanof\PhpImapSockets\Response\SearchResponse;
 use Sazanof\PhpImapSockets\Traits\PrepareArgument;
 
 class Mailbox
@@ -28,6 +30,7 @@ class Mailbox
 	protected string $name;
 	protected string $delimiter;
 	protected string $path;
+	protected string $originalPath;
 	protected bool $hasChildren = false;
 	protected bool $isTrash = false;
 	protected bool $isDrafts = false;
@@ -95,6 +98,7 @@ class Mailbox
 		$path = rtrim($path, '"');
 		$path = ltrim($path, '"');
 		$this->setPath($path);
+		$this->setOriginalPath($matches[3]);
 		$pathArray = explode($this->getDelimiter(), $this->getPath());
 		$this->setName(!empty($pathArray) ? end($pathArray) : $this->getPath());
 	}
@@ -102,7 +106,7 @@ class Mailbox
 	public function examine()
 	{
 		$response = new ExamineResponse(
-			$this->getConnection()->command(ExamineCommand::class, [$this->getPath()])
+			$this->getConnection()->command(ExamineCommand::class, [$this->getOriginalPath()])
 		);
 		$this->uidvalidity = $response->uidvalidiry;
 		$this->uidnext = $response->uidnext;
@@ -115,13 +119,26 @@ class Mailbox
 
 	public function select()
 	{
-		$this->connection->select($this->imapUtf8ToMutf7($this->path));
+		$this->connection->select($this->getOriginalPath());
 		return $this;
 	}
 
-	public function search(Query $query)
+	public function search(SearchQuery $query)
 	{
-		return $this->connection->command(SearchCommand::class, [$query]);
+		return new SearchResponse(
+			$this->connection->command(SearchCommand::class, [$query])
+		);
+	}
+
+	public function fetch(array $uids, FetchQuery $query)
+	{
+		return $this->connection->command(FetchCommand::class, [$uids, $query]);
+	}
+
+	public function getBodyStructure(array $uids)
+	{
+		$query = new FetchQuery();
+		return $this->connection->command(FetchCommand::class, [$uids, $query->bodystructure()])->as(BodyStructure::class);
 	}
 
 	public function hasChildren()
@@ -296,5 +313,21 @@ class Mailbox
 	public function getUidvalidity(): int
 	{
 		return $this->uidvalidity;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOriginalPath(): string
+	{
+		return $this->originalPath;
+	}
+
+	/**
+	 * @param string $originalPath
+	 */
+	public function setOriginalPath(string $originalPath): void
+	{
+		$this->originalPath = $originalPath;
 	}
 }

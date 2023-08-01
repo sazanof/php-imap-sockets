@@ -1,22 +1,22 @@
 {
-    "name": "sazanof/php-imap-sockets",
-    "description": "PHP IMAP Library, based on sockets",
-    "type": "library",
-    "require": {
-        "phpunit/phpunit": "^10.2",
-        "symfony/var-dumper": "^6.3",
-      "ext-imap": "*"
-    },
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Sazanof\\PhpImapSockets\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Mikhail Sazanov",
-            "email": "m@sazanof.ru"
-        }
-    ]
+  "name": "sazanof/php-imap-sockets",
+  "description": "PHP IMAP Library, based on sockets",
+  "type": "library",
+  "require": {
+    "phpunit/phpunit": "^10.2",
+    "symfony/var-dumper": "^6.3",
+    "ext-imap": "*"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Sazanof\\PhpImapSockets\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Mikhail Sazanov",
+      "email": "m@sazanof.ru"
+    }
+  ]
 }
