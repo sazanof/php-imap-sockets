@@ -2,114 +2,105 @@
 
 namespace Sazanof\PhpImapSockets\Models;
 
-use Sazanof\PhpImapSockets\Parts\BodyStructurePart;
+use Sazanof\PhpImapSockets\Parts\AttachmentPart;
+use Sazanof\PhpImapSockets\Parts\TextPart;
 
-/**
- * https://tools.ietf.org/html/rfc3501#section-7.4.2
- *
- * multipart:
- *    - parts array
- *    - subtype
- *    + params array
- *    + disposition array
- *    + language
- *    + location
- *
- * basic:
- *    - type
- *    - subtype
- *    - params array
- *    - content id
- *    - description
- *    - encoding
- *    - size
- *    + body MD5
- *    + disposition array
- *    + language
- *    + location
- *
- * text:
- *    - type
- *    - subtype
- *    - params array
- *    - content id
- *    - description
- *    - encoding
- *    - size
- *    - size in text lines
- *    + body MD5
- *    + disposition array
- *    + language
- *    + location
- *
- * message/rfc822:
- *    - type
- *    - subtype
- *    - params array
- *    - content id
- *    - description
- *    - encoding
- *    - size
- *    - envelope structure
- *    - body structure
- *    - size in text lines
- *    + body MD5
- *    + disposition array
- *    + language
- *    + location
- */
 class BodyStructure
 {
-
-	public const TYPE_TEXT = 'text';
-	public const TYPE_IMAGE = 'image';
-	public const TYPE_APPLICATION = 'application';
-	public const TYPE_VIDEO = 'video';
-	public const TYPE_BOUNDARY = 'boundary';
-	public const TYPES = [
-		self::TYPE_TEXT,
-		self::TYPE_APPLICATION,
-		self::TYPE_BOUNDARY,
-		self::TYPE_IMAGE,
-		self::TYPE_VIDEO
-	];
-	protected const SUBTYPES = ['MIXED', 'MESSAGE', 'DIGEST', 'ALTERNATIVE', 'RELATED', 'REPORT', 'SIGNED', 'ENCRYPTED', 'FORM DATA'];
-
-	protected string $structRegExp = '/BODYSTRUCTURE \((.*)\)\)/';
+	protected string $structRegExp = '/BODYSTRUCTURE \((.*)\)/';
 	protected string $groupRegExp = '/\(((?>[^()]+)|(?R))*\)/';
 	protected string $bracesRegExp = '/(?=\(((?:[^()]++|\((?1)\))++)\))/';
-	protected mixed $bodyStructure;
-	protected array $structArray = [];
+	protected string $parseOneSectionRe = '/\((.+)\) "(related|alternative|mixed)" \((.*?)\) (.*?) (.*?) (.*?)$/i';
+	protected string $parseOneTextRe = '/\("text" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) (.*?) (.*?) (.*?) (.*?)\)/i';
+	protected string $parseOneFileRe = '/\("(image|video|alternative)" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) \((.*?)\) (.*?) (.*?)\)/';
 
-	public function __construct(string $text)
+	protected const TYPES = ['MIXED', 'ALTERNATIVE', 'RELATED'];
+
+	//[^()]{1,}+(?:\([^()]*\)[^()]+)*
+
+	public function __construct(string $responseLine)
 	{
-		if (preg_match($this->structRegExp, $text, $matches)) {
-			$this->bodyStructure = $matches[1];
+		if (preg_match($this->structRegExp, $responseLine, $matches)) {
+			$groups = $this->groups($matches[1]);
+			dd($this->analizeBodyParts($groups[0]));
 		}
-		$arr = $this->executeStringPart($this->bodyStructure);
-		$this->structArray = [];
-		foreach ($arr as $item) {
-			if (preg_match_all($this->bracesRegExp, $item, $matches)) {
-				foreach ($matches[1] as $match) {
-					if (
-						str_starts_with($match, '"') &&
-						preg_match('/' . implode('|', self::TYPES) . '/', $match, $matchMatches)
-					) {
-						$this->structArray[] = new BodyStructurePart($matchMatches[0], $match);
-					}
+
+	}
+
+	protected function groups(string $string)
+	{
+		$groups = [];
+		if (preg_match_all($this->groupRegExp, $string, $matches)) {
+			foreach ($matches[0] as $match) {
+				if (str_starts_with($match, '(')) {
+					$groups[] = $match;
 				}
 			}
 		}
+		return $groups;
 	}
 
-	protected function executeStringPart(string $text)
+	protected function analizeBodyParts(string $string, MultiPart $parentMultipart = null)
 	{
-		if (preg_match($this->groupRegExp, $text, $matches)) {
-			$this->structArray[] = $matches[0];
-			$text = str_replace($matches[0], '', $text);
-			$this->executeStringPart($text);
+		//dump('Try analize with ' . $string);
+		if (str_starts_with($string, '((')) {
+			//level++
+			if (preg_match('/\((.*)\)/', $string, $matches)) {
+				if (str_starts_with($matches[1], '("')) {
+					if (strpos($matches[1], 'text') === 2) {
+						if (preg_match($this->parseOneSectionRe, $matches[1], $multipart)) {
+							$nextPart = $multipart[0];
+							$multipartSubtype = $multipart[2];
+							$multipartBoundary = $multipart[3];
+							$multipartDisposition = $multipart[4];
+							$multipartLanguage = $multipart[5];
+							$multipartLocation = $multipart[6];
+
+							$newMpAnyway = new MultiPart($multipart);
+							$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : $newMpAnyway;
+							$next = str_replace(" \"$multipartSubtype\" ($multipartBoundary) $multipartDisposition $multipartLanguage $multipartLocation", '', $nextPart);
+							if ($parentMultipart !== $newMpAnyway) {
+								$parentMultipart->addChild($this->analizeBodyParts($next, $newMpAnyway));
+							} else {
+								$this->analizeBodyParts($next, $parentMultipart);
+							}
+
+
+						}
+					} elseif (strpos($matches[1], 'image') === 2) {
+						dd('image multipart detected');
+					}
+				}
+			}
+		} else {
+			// (" come
+			if (str_starts_with($string, '("text')) {
+				if (preg_match($this->parseOneTextRe, $string, $matches)) {
+					$partToDelete = $matches[0];
+					$partSubtype = $matches[1];
+					$partCharset = $matches[2];
+					$partContentId = $matches[3];
+					$partDescription = $matches[4];
+					$partEncoding = $matches[5];
+					$partSize = (int)$matches[6];
+					$partLinesCount = (int)$matches[7];
+					$partBodyMd5 = (int)$matches[8];
+					$partDisposition = $matches[9];
+					$partLanguage = $matches[10];
+					$partLocation = $matches[11];
+					$parentMultipart->getParts()->add(new TextPart($matches));
+					//dump('We get single part = ' . $partToDelete);
+					$string = str_replace($partToDelete, '', $string);
+					if (!empty($string)) {
+						$this->analizeBodyParts($string, $parentMultipart);
+					}
+				}
+			} elseif (str_starts_with($string, '("image')) {
+				if (preg_match($this->parseOneFileRe, $string, $matches)) {
+					$parentMultipart->getParts()->add(new AttachmentPart($matches));
+				}
+			}
 		}
-		return $this->structArray;
+		return $parentMultipart;
 	}
 }
-

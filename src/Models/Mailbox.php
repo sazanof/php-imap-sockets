@@ -7,6 +7,7 @@
 
 namespace Sazanof\PhpImapSockets\Models;
 
+use Sazanof\PhpImapSockets\Collections\BodyStructureCollection;
 use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
 use Sazanof\PhpImapSockets\Commands\ExamineCommand;
@@ -130,15 +131,15 @@ class Mailbox
 		);
 	}
 
-	public function fetch(array $uids, FetchQuery $query)
+	public function fetch(array $nums, FetchQuery $query)
 	{
-		return $this->connection->command(FetchCommand::class, [$uids, $query]);
+		return $this->connection->command(FetchCommand::class, [$nums, $query]);
 	}
 
-	public function getBodyStructure(array $uids)
+	public function getBodyStructure(array $nums)
 	{
 		$query = new FetchQuery();
-		return $this->connection->command(FetchCommand::class, [$uids, $query->bodystructure()])->as(BodyStructure::class);
+		return $this->connection->command(FetchCommand::class, [$nums, $query->bodystructure()])->asCollection(BodyStructureCollection::class);
 	}
 
 	public function hasChildren()

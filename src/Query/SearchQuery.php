@@ -200,16 +200,19 @@ class SearchQuery
 	public function smaller(int $size)
 	{
 		$this->addParamWithValue('SMALLER', $size);
+		return $this;
 	}
 
 	public function subject(string $subject)
 	{
 		$this->addParamWithValue('SUBJECT', imap_utf8($subject), false);
+		return $this;
 	}
 
 	public function text(string $text)
 	{
 		$this->addParamWithValue('TEXT', $text);
+		return $this;
 	}
 
 	public function to(string $address)

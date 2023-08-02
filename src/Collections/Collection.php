@@ -11,9 +11,24 @@ class Collection
 {
 	protected array $collection = [];
 
+	public function __construct(array $items = [])
+	{
+		$this->collection = $items;
+	}
+
 	public function add(mixed $item)
 	{
 		$this->collection[] = $item;
+	}
+
+	public function empty()
+	{
+		$this->collection = [];
+	}
+
+	public function unset()
+	{
+		unset($this->collection);
 	}
 
 	public function remove()
@@ -39,9 +54,11 @@ class Collection
 		return $this;
 	}
 
-	public function find()
+	public function find(\Closure $closure, $type = ARRAY_FILTER_USE_BOTH)
 	{
-
+		return array_values(array_filter($this->collection, function ($value, $key) use ($closure) {
+			return $closure($value, $key);
+		}, $type));
 	}
 
 	public function toArray()

@@ -4,7 +4,7 @@ namespace Sazanof\PhpImapSockets\Response;
 
 class SearchResponse
 {
-	protected array $uids = [];
+	protected array $nums = [];
 
 	/**
 	 * @param Response $response
@@ -14,14 +14,14 @@ class SearchResponse
 		if ($response->isOk()) {
 			$last = $response->line(count($response->lines()) - 2);
 			if (preg_match('/\* SEARCH (.+)\r\n/', $last, $matches)) {
-				$this->uids = array_map('intval', explode(' ', $matches[1]));
+				$this->nums = array_map('intval', explode(' ', $matches[1]));
 			}
 		}
 		return $this;
 	}
 
-	public function uids()
+	public function msgNums()
 	{
-		return $this->uids;
+		return $this->nums;
 	}
 }

@@ -6,35 +6,23 @@ class BasePart
 {
 	protected string $type;
 	protected string $subtype;
-	protected string $text;
 	protected string $mimeType;
-	private string $re;
+	protected array $matches;
 
-	public function __construct(string $type, string $text)
+	public function __construct(array $matches)
 	{
-		$this->text = $text;
-		$this->type = $type;
-		$this->detectSubType();
-		$this->mimeType = "$this->type/$this->subtype";
+		$this->matches = $matches;
+		$this->type = $matches[1];
+		$this->subtype = $matches[2];
+		$this->mimeType = "$matches[1]/$matches[2]";
 	}
 
-	/**
-	 * @return void
-	 */
-	protected function detectSubType(): void
-	{
-		if (preg_match('/"' . $this->type . '" "(.*?)"/', $this->text, $matches)) {
-			$this->subtype = $matches[1];
-		}
-	}
 
-	/**
-	 * @param string $value
-	 * @return string|null
-	 */
 	protected function setValue(string $value): ?string
 	{
-		return $value === 'NIL' ? null : $this->trimValue($value);
+		return $value === 'NIL' ? null : $this->trimValue(
+			$this->isUtf8($value) ? imap_utf8($value) : $value
+		);
 	}
 
 	/**
@@ -45,5 +33,15 @@ class BasePart
 	{
 		$value = rtrim($value, '"');
 		return ltrim($value, '"');
+	}
+
+	protected function fillValuesFromMatches()
+	{
+
+	}
+
+	protected function isUtf8(string $string)
+	{
+		return str_starts_with(strtoupper($string), '=?UTF-8');
 	}
 }

@@ -12,27 +12,40 @@ class AttachmentPart extends BasePart
 	protected string $encoding;
 	protected string $disposition;
 	protected bool $isInline = false;
-	private string $re = '/"(.*?)" "(.*?)" \((.*?)\) (.*?|NIL) (.*?|NIL) "(.*?)" (\d+) (.*?|NIL) \("(.+?)" \("(.+?)" "(.+?)"\)\) (.*?|NIL) (.*?|NIL)$/';
+	protected ?string $language = null;
+	protected ?string $location = null;
 
 
-	public function __construct(string $type, string $text)
+	public function __construct(array $matches)
 	{
-		parent::__construct($type, $text);
-		$this->parseRe();
+		parent::__construct($matches);
+		$this->prepareName();
+		$this->prepareFileName();
+		$this->contentId = trim($matches[4], '"');
+		$this->size = (int)$matches[7];
+		$this->encoding = $matches[6];
+		$this->language = $this->setValue($matches[10]);
+		$this->location = $this->setValue($matches[11]);
 	}
 
-	public function parseRe()
+	public function fillValuesFromMatches()
 	{
-		if (preg_match($this->re, $this->text, $matches)) {
-			$this->subtype = $matches[2];
-			$this->contentId = $this->setValue($matches[4]);
-			$this->description = $this->setValue($matches[5]);
-			$this->size = (int)$matches[7];
-			$this->disposition = $this->setValue($matches[9]);
+
+	}
+
+	protected function prepareName()
+	{
+		if (preg_match('/"name" "(.*?)"/', $this->matches[3], $m)) {
+			$this->originalName = $m[1];
+		}
+	}
+
+	protected function prepareFileName()
+	{
+		if (preg_match('/"(.*?)" \("filename" "(.*?)"\)/', $this->matches[9], $m)) {
+			$this->disposition = strtolower($m[1]);
 			$this->isInline = $this->disposition === 'inline';
-			$this->originalName = $this->setValue($matches[11]);
-			$this->detectEncoding();
-			$this->convertName();
+			$this->fileName = $this->setValue($m[2]);
 		}
 	}
 

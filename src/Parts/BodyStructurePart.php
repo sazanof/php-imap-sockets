@@ -2,7 +2,7 @@
 
 namespace Sazanof\PhpImapSockets\Parts;
 
-use Sazanof\PhpImapSockets\Models\BodyStructure;
+use Sazanof\PhpImapSockets\Models\BodyStructureOld;
 
 class BodyStructurePart
 {
@@ -17,12 +17,12 @@ class BodyStructurePart
 		$this->text = $text;
 		$this->type = $type;
 		switch ($this->type) {
-			case BodyStructure::TYPE_TEXT:
+			case BodyStructureOld::TYPE_TEXT:
 				$this->part = new TextPart($type, $this->text);
 				break;
-			case BodyStructure::TYPE_IMAGE:
-			case BodyStructure::TYPE_VIDEO:
-			case BodyStructure::TYPE_APPLICATION:
+			case BodyStructureOld::TYPE_IMAGE:
+			case BodyStructureOld::TYPE_VIDEO:
+			case BodyStructureOld::TYPE_APPLICATION:
 				$this->part = new AttachmentPart($type, $this->text);
 				break;
 		}

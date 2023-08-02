@@ -14,7 +14,7 @@ class FetchQuery
 	public const BODY_HEADER_FIELDS = 'HEADER.FIELDS';
 	public const BODY_HEADER_FIELDS_NOT = 'HEADER.FIELDS.NOT';
 	public const MIME = 'MIME';
-	public const TEXT = 'TEXT';
+	public const RFC822_TEXT = 'RFC822.TEXT';
 
 	protected Collection $parameters;
 
@@ -59,7 +59,8 @@ class FetchQuery
 
 	public function flags()
 	{
-
+		$this->parameters->add('FLAGS');
+		return $this;
 	}
 
 	public function full()
@@ -79,7 +80,8 @@ class FetchQuery
 
 	public function rfc822Header()
 	{
-
+		$this->parameters->add('RFC822.HEADER');
+		return $this;
 	}
 
 	public function rfc822Size()
@@ -88,15 +90,24 @@ class FetchQuery
 
 	public function rfc822Text()
 	{
+		$this->parameters->add(self::RFC822_TEXT);
+		return $this;
 	}
 
 	public function uid()
 	{
-
+		$this->parameters->add('UID');
+		return $this;
 	}
 
 	public function toQueryString()
 	{
 		return implode(' ', $this->parameters->toArray());
+	}
+
+	public function clear()
+	{
+		$this->parameters->empty();
+		return $this;
 	}
 }
