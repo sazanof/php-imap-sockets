@@ -12,7 +12,9 @@ class BodyStructure
 	protected string $bracesRegExp = '/(?=\(((?:[^()]++|\((?1)\))++)\))/';
 	protected string $parseOneSectionRe = '/\((.+)\) "(related|alternative|mixed)" \((.*?)\) (.*?) (.*?) (.*?)$/i';
 	protected string $parseOneTextRe = '/\("text" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) (.*?) (.*?) (.*?) (.*?)\)/i';
-	protected string $parseOneFileRe = '/\("(image|video|alternative)" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) \((.*?)\) (.*?) (.*?)\)/';
+	protected string $parseOneFileRe = '/\("(image|video|application)" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) \((.*?)\) (.*?) (.*?)\)/';
+
+	protected ?MultiPart $multiPart = null;// сделать коренной мультипарт, чтобы в него в цикле группы перебирать
 
 	protected const TYPES = ['MIXED', 'ALTERNATIVE', 'RELATED'];
 
@@ -22,7 +24,9 @@ class BodyStructure
 	{
 		if (preg_match($this->structRegExp, $responseLine, $matches)) {
 			$groups = $this->groups($matches[1]);
-			dd($this->analizeBodyParts($groups[0]));
+			foreach ($groups as $group) {
+				$this->analizeBodyParts($group);
+			}
 		}
 
 	}
@@ -64,11 +68,9 @@ class BodyStructure
 							} else {
 								$this->analizeBodyParts($next, $parentMultipart);
 							}
-
-
 						}
-					} elseif (strpos($matches[1], 'image') === 2) {
-						dd('image multipart detected');
+					} else {
+						dd('file multipart detected');
 					}
 				}
 			}
@@ -95,7 +97,7 @@ class BodyStructure
 						$this->analizeBodyParts($string, $parentMultipart);
 					}
 				}
-			} elseif (str_starts_with($string, '("image')) {
+			} else {
 				if (preg_match($this->parseOneFileRe, $string, $matches)) {
 					$parentMultipart->getParts()->add(new AttachmentPart($matches));
 				}
