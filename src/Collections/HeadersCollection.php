@@ -38,7 +38,9 @@ class HeadersCollection extends Collection
 						} else {
 							if (!empty($newLine)) {
 								$newLine = rtrim($prevLine, "\r\n") . "$newLine\r\n";
-								$newLine = $this->clearJoinedStringFromCharset($newLine);
+								if ($this->isUtf8($newLine)) {
+									$newLine = $this->clearJoinedStringFromCharset($newLine);
+								}
 								$lines[array_key_last($lines)] = new Header($newLine);
 								$newLine = '';
 								$append = false;
@@ -59,6 +61,11 @@ class HeadersCollection extends Collection
 				}
 			}
 		}
+	}
+
+	public function isUtf8(string $string)
+	{
+		return str_contains(strtoupper($string), '=?UTF-8');
 	}
 
 	public function clearJoinedStringFromCharset(string $text): string

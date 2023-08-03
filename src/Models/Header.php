@@ -12,25 +12,32 @@ class Header
 	{
 		if (preg_match('/^(.+?): (.+?);?\r\n/', $headerLine, $matches)) {
 			$this->key = strtolower($matches[1]);
-			////////// WRAP THIS SEPARATE
+			////////// TODO WRAP THIS SEPARATE
 			if ($this->isUtf8($matches[2])) {
 				if (preg_match('/(^|)=\?.*?\?Q|q\?/', $matches[2], $_m)) {
-					$this->charset = strtoupper($_m[1]);
+					$this->charset = $this->clearCharset($_m[0]);
 					$this->value = quoted_printable_decode(
 						preg_replace('/(^|)=\?.*?\?.\?|\?=$/', '', $matches[2])
 					);
 				} elseif (preg_match('/(^|)=\?.*?\?B|b\?/', $matches[2], $_m)) {
-					$this->charset = strtoupper($_m[1]);
-					$this->value = imap_base64(
-						$matches[2]);
+					$this->charset = $this->clearCharset($_m[0]);
+					$this->value = iconv_mime_decode($matches[2], 0, "UTF-8");
 				} else {
 					$this->value = imap_utf8($matches[2]);
 				}
 			} else {
-				$this->value = $matches[2];
+				if (preg_match('/(^|)=\?.*?\?.\?/', $matches[2], $out)) {
+					$this->charset = $this->clearCharset($out[0]);
+				}
+				$this->value = iconv_mime_decode($matches[2], 0, "UTF-8");
 			}
 			/////////////////// IN METHOD WHICH DETECT DECODING
 		}
+	}
+
+	public function clearCharset(string $text)
+	{
+		return str_replace(['=', '?Q', '?B', '?'], '', strtoupper($text));
 	}
 
 	public function isUtf8(string $string)
