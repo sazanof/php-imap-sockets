@@ -14,12 +14,12 @@ class TextPart extends BasePart
 		$this->type = 'text';//TODO bug in regexp
 		$this->mimeType = "text/$matches[1]"; //TODO bug in regexp
 		$this->subtype = $matches[1];//TODO bug in regexp
-		$this->detectCharset();
+		$this->detectCharset($matches[2]);
 	}
 
-	public function detectCharset()
+	public function detectCharset(string $charset)
 	{
-		if (preg_match('/"charset" "(.+?)"/', $this->matches[2], $matches)) {
+		if (preg_match('/"charset" "(.+?)"/', $charset, $matches)) {
 			$this->charset = strtoupper($matches[1]);
 		}
 	}

@@ -18,7 +18,7 @@ class Message
 	protected string $to;
 	protected string $subject;
 	protected MessageHeadersCollection $headers;
-	protected BodyStructureOld $bodyStructure;
+	protected ?MultiPart $bodyStructure;
 
 	public function __construct()
 	{
@@ -111,17 +111,17 @@ class Message
 	}
 
 	/**
-	 * @param BodyStructureOld $bodyStructure
+	 * @param ?MultiPart $bodyStructure
 	 */
-	public function setBodyStructure(BodyStructureOld $bodyStructure): void
+	public function setBodyStructure(?MultiPart $bodyStructure): void
 	{
 		$this->bodyStructure = $bodyStructure;
 	}
 
 	/**
-	 * @return BodyStructureOld
+	 * @return BodyStructure
 	 */
-	public function getBodyStructure(): BodyStructureOld
+	public function getBodyStructure(): BodyStructure
 	{
 		return $this->bodyStructure;
 	}

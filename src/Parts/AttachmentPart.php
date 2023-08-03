@@ -19,8 +19,8 @@ class AttachmentPart extends BasePart
 	public function __construct(array $matches)
 	{
 		parent::__construct($matches);
-		$this->prepareName();
-		$this->prepareFileName();
+		$this->prepareName($matches[3]);
+		$this->prepareFileName($matches[9]);
 		$this->contentId = trim($matches[4], '"');
 		$this->size = (int)$matches[7];
 		$this->encoding = $matches[6];
@@ -33,16 +33,16 @@ class AttachmentPart extends BasePart
 
 	}
 
-	protected function prepareName()
+	protected function prepareName(string $name)
 	{
-		if (preg_match('/"name" "(.*?)"/', $this->matches[3], $m)) {
+		if (preg_match('/"name" "(.*?)"/', $name, $m)) {
 			$this->originalName = $m[1];
 		}
 	}
 
-	protected function prepareFileName()
+	protected function prepareFileName(string $filename)
 	{
-		if (preg_match('/"(.*?)" \("filename" "(.*?)"\)/', $this->matches[9], $m)) {
+		if (preg_match('/"(.*?)" \("filename" "(.*?)"\)/', $filename, $m)) {
 			$this->disposition = strtolower($m[1]);
 			$this->isInline = $this->disposition === 'inline';
 			$this->fileName = $this->setValue($m[2]);

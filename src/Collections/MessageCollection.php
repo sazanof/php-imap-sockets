@@ -6,7 +6,6 @@ use Sazanof\PhpImapSockets\Connection;
 use Sazanof\PhpImapSockets\Models\Mailbox;
 use Sazanof\PhpImapSockets\Models\Message;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
-use Sazanof\PhpImapSockets\Response\Response;
 
 class MessageCollection extends Collection
 {
@@ -17,20 +16,23 @@ class MessageCollection extends Collection
 
 	public function __construct($msgNums, Mailbox $mailbox)
 	{
+		parent::__construct();
 		$this->msgNums = $msgNums;
 		$this->query = new FetchQuery();
 		$this->mailbox = $mailbox;
 		$this->connection = $mailbox->getConnection();
 
 		$this->findUids();
-		$this->parseBodyStructure();
+		$bodyStructure = $this->parseBodyStructure();
 		$headers = $this->findHeaders();
-		$this->map(function (/** @var Message $item */ $item) use ($headers) {
+		$this->map(function (/** @var Message $item */ $item) use ($headers, $bodyStructure) {
 			/** @var array $_headers */
-			$_headers = $headers->getHeaders()[$item->getNum()];
+			$msgNum = $item->getNum();
+			$_headers = $headers->getHeaders()[$msgNum];
 			$item->setHeaders($_headers);
+			$item->setBodyStructure($bodyStructure->getItem($msgNum)->getMultiPart());
+
 		});
-		dd($this->collection);
 	}
 
 	public function findUids()
@@ -70,9 +72,11 @@ class MessageCollection extends Collection
 
 	}
 
-	public function parseBodyStructure()
+	/**
+	 * @return BodyStructureCollection
+	 */
+	public function parseBodyStructure(): BodyStructureCollection
 	{
-		$response = $this->mailbox->getBodyStructure($this->msgNums);
-		dd($response);
+		return $this->mailbox->getBodyStructure($this->msgNums);
 	}
 }

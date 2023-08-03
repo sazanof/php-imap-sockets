@@ -7,11 +7,9 @@ class BasePart
 	protected string $type;
 	protected string $subtype;
 	protected string $mimeType;
-	protected array $matches;
 
 	public function __construct(array $matches)
 	{
-		$this->matches = $matches;
 		$this->type = $matches[1];
 		$this->subtype = $matches[2];
 		$this->mimeType = "$matches[1]/$matches[2]";

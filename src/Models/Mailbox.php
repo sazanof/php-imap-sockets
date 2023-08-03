@@ -136,7 +136,7 @@ class Mailbox
 		return $this->connection->command(FetchCommand::class, [$nums, $query]);
 	}
 
-	public function getBodyStructure(array $nums)
+	public function getBodyStructure(array $nums): BodyStructureCollection
 	{
 		$query = new FetchQuery();
 		return $this->connection->command(FetchCommand::class, [$nums, $query->bodystructure()])->asCollection(BodyStructureCollection::class);

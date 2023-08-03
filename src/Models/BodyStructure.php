@@ -7,12 +7,12 @@ use Sazanof\PhpImapSockets\Parts\TextPart;
 
 class BodyStructure
 {
-	protected string $structRegExp = '/BODYSTRUCTURE \((.*)\)/';
-	protected string $groupRegExp = '/\(((?>[^()]+)|(?R))*\)/';
-	protected string $bracesRegExp = '/(?=\(((?:[^()]++|\((?1)\))++)\))/';
-	protected string $parseOneSectionRe = '/\((.+)\) "(related|alternative|mixed)" \((.*?)\) (.*?) (.*?) (.*?)$/i';
-	protected string $parseOneTextRe = '/\("text" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) (.*?) (.*?) (.*?) (.*?)\)/i';
-	protected string $parseOneFileRe = '/\("(image|video|application)" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) \((.*?)\) (.*?) (.*?)\)/';
+	private string $structRegExp = '/BODYSTRUCTURE \((.*)\)/';
+	private string $groupRegExp = '/\(((?>[^()]+)|(?R))*\)/';
+	private string $bracesRegExp = '/(?=\(((?:[^()]++|\((?1)\))++)\))/';
+	private string $parseOneSectionRe = '/\((.+)\) "(related|alternative|mixed)" \((.*?)\) (.*?) (.*?) (.*?)$/i';
+	private string $parseOneTextRe = '/\("text" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) (.*?) (.*?) (.*?) (.*?)\)/i';
+	private string $parseOneFileRe = '/\("(image|video|application)" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) \((.*?)\) (.*?) (.*?)\)/';
 
 	protected ?MultiPart $multiPart = null;// сделать коренной мультипарт, чтобы в него в цикле группы перебирать
 
@@ -25,10 +25,22 @@ class BodyStructure
 		if (preg_match($this->structRegExp, $responseLine, $matches)) {
 			$groups = $this->groups($matches[1]);
 			foreach ($groups as $group) {
-				$this->analizeBodyParts($group);
+				if (is_null($this->multiPart)) {
+					$this->multiPart = $this->analizeBodyParts($group);
+				} else {
+					$this->analizeBodyParts($group, $this->multiPart);
+				}
+
 			}
 		}
+	}
 
+	/**
+	 * @return MultiPart|null
+	 */
+	public function getMultiPart(): ?MultiPart
+	{
+		return $this->multiPart;
 	}
 
 	protected function groups(string $string)
@@ -48,10 +60,10 @@ class BodyStructure
 	{
 		//dump('Try analize with ' . $string);
 		if (str_starts_with($string, '((')) {
-			//level++
 			if (preg_match('/\((.*)\)/', $string, $matches)) {
 				if (str_starts_with($matches[1], '("')) {
 					if (strpos($matches[1], 'text') === 2) {
+						// We get a multipart
 						if (preg_match($this->parseOneSectionRe, $matches[1], $multipart)) {
 							$nextPart = $multipart[0];
 							$multipartSubtype = $multipart[2];
@@ -76,22 +88,12 @@ class BodyStructure
 			}
 		} else {
 			// (" come
+			//We get single part;
 			if (str_starts_with($string, '("text')) {
 				if (preg_match($this->parseOneTextRe, $string, $matches)) {
 					$partToDelete = $matches[0];
-					$partSubtype = $matches[1];
-					$partCharset = $matches[2];
-					$partContentId = $matches[3];
-					$partDescription = $matches[4];
-					$partEncoding = $matches[5];
-					$partSize = (int)$matches[6];
-					$partLinesCount = (int)$matches[7];
-					$partBodyMd5 = (int)$matches[8];
-					$partDisposition = $matches[9];
-					$partLanguage = $matches[10];
-					$partLocation = $matches[11];
+					$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : new MultiPart($matches);
 					$parentMultipart->getParts()->add(new TextPart($matches));
-					//dump('We get single part = ' . $partToDelete);
 					$string = str_replace($partToDelete, '', $string);
 					if (!empty($string)) {
 						$this->analizeBodyParts($string, $parentMultipart);

@@ -6,7 +6,7 @@ use Sazanof\PhpImapSockets\Collections\Collection;
 
 class MultiPart
 {
-	protected string $subtype;
+	protected ?string $subtype;
 	protected Collection $parts;
 	protected Collection $children;
 
@@ -14,7 +14,8 @@ class MultiPart
 	{
 		$this->parts = new Collection();
 		$this->children = new Collection();
-		$this->subtype = $matches[2];
+		// quick fix
+		$this->subtype = in_array($matches[2], ['alternative', 'related', 'mixed']) ? $matches[2] : null;
 	}
 
 	/**

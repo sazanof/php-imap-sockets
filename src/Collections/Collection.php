@@ -16,6 +16,11 @@ class Collection
 		$this->collection = $items;
 	}
 
+	public function items()
+	{
+		return $this->collection;
+	}
+
 	public function add(mixed $item)
 	{
 		$this->collection[] = $item;
@@ -69,5 +74,10 @@ class Collection
 	public function first()
 	{
 		return count($this->collection) > 0 ? $this->collection[0] : null;
+	}
+
+	public function length()
+	{
+		return count($this->collection);
 	}
 }
