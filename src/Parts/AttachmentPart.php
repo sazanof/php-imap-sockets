@@ -28,6 +28,14 @@ class AttachmentPart extends BasePart
 		$this->location = $this->setValue($matches[11]);
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isInline(): bool
+	{
+		return $this->isInline;
+	}
+
 	public function fillValuesFromMatches()
 	{
 

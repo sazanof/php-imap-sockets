@@ -19,6 +19,7 @@ class Message
 	protected string $subject;
 	protected MessageHeadersCollection $headers;
 	protected ?MultiPart $bodyStructure;
+	protected bool $hasAttachments = false;
 
 	public function __construct()
 	{
@@ -103,7 +104,7 @@ class Message
 	}
 
 	/**
-	 * @return Collection
+	 * @return MessageHeadersCollection
 	 */
 	public function getHeaders(): MessageHeadersCollection
 	{
@@ -116,12 +117,15 @@ class Message
 	public function setBodyStructure(?MultiPart $bodyStructure): void
 	{
 		$this->bodyStructure = $bodyStructure;
+		if (!is_null($bodyStructure)) {
+			$this->hasAttachments = $this->bodyStructure->isAttachmentsExists();
+		}
 	}
 
 	/**
-	 * @return BodyStructure
+	 * @return MultiPart|null
 	 */
-	public function getBodyStructure(): BodyStructure
+	public function getBodyStructure(): ?MultiPart
 	{
 		return $this->bodyStructure;
 	}

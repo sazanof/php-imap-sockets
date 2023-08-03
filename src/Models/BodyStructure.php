@@ -101,7 +101,17 @@ class BodyStructure
 				}
 			} else {
 				if (preg_match($this->parseOneFileRe, $string, $matches)) {
-					$parentMultipart->getParts()->add(new AttachmentPart($matches));
+					$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : new MultiPart($matches);
+					$attachment = new AttachmentPart($matches);
+					if (!$attachment->isInline()) {
+						if (is_null($parentMultipart))
+							$parentMultipart->plusOneToAttachmentsCount();
+						if (!$parentMultipart->isAttachmentsExists()) {
+							$parentMultipart->setAttachmentsExists(true);
+						}
+					}
+
+					$parentMultipart->getParts()->add($attachment);
 				}
 			}
 		}

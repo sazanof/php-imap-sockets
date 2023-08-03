@@ -18,6 +18,7 @@ class HeadersCollection extends Collection
 		$prevLine = null;
 		if ($response->isOk()) {
 			$i = 0;
+			$newLine = '';
 			foreach ($response->lines() as $line) {
 				$append = true;
 				if (preg_match('/\* (\d+) FETCH /', $line, $matches)) {
@@ -29,12 +30,20 @@ class HeadersCollection extends Collection
 					if (str_starts_with($line, "\tboundary")) {
 						$this->boundary = $this->getBoundary($line);
 						continue;
-					}
-					if (!is_null($prevLine)) {
+					} elseif (!is_null($prevLine)) {
 						if ((str_starts_with($line, "\t") || str_starts_with($line, " ")) && !str_contains($line, "\tboundary")) {
-							$newLine = rtrim($prevLine, "\r\n") . ltrim($line, "\t");
-							$lines[array_key_last($lines)] = new Header($newLine);
+							$line = trim($line, "\t\r\n ");
+							$newLine .= trim($line, "\t\r\n ");
 							$append = false;
+						} else {
+							if (!empty($newLine)) {
+								$newLine = rtrim($prevLine, "\r\n") . "$newLine\r\n";
+								$newLine = $this->clearJoinedStringFromCharset($newLine);
+								$lines[array_key_last($lines)] = new Header($newLine);
+								$newLine = '';
+								$append = false;
+							}
+
 						}
 					}
 					if ($append) {
@@ -50,6 +59,13 @@ class HeadersCollection extends Collection
 				}
 			}
 		}
+	}
+
+	public function clearJoinedStringFromCharset(string $text): string
+	{
+		$string = preg_replace('/\?=(=\?.*?\?.\?)(.*?)/i', '', $text);
+
+		return $string;
 	}
 
 	public function getBoundary($line)
