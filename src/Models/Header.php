@@ -5,7 +5,7 @@ namespace Sazanof\PhpImapSockets\Models;
 class Header
 {
 	protected string $key;
-	protected string $value;
+	protected ?string $value;
 	protected string $charset = '';
 
 	public function __construct(string $headerLine)
@@ -28,10 +28,19 @@ class Header
 			} else {
 				if (preg_match('/(^|)=\?.*?\?.\?/', $matches[2], $out)) {
 					$this->charset = $this->clearCharset($out[0]);
+					$this->value = iconv_mime_decode($matches[2], 0, "UTF-8");
+				} else {
+					// strings without charset
+					$this->charset = mb_detect_encoding($matches[2]);
+					$val = @iconv($this->charset, 'UTF-8', $matches[2]);
+					$this->value = is_string($val) ? $val : $matches[2];
 				}
-				$this->value = iconv_mime_decode($matches[2], 0, "UTF-8");
 			}
 			/////////////////// IN METHOD WHICH DETECT DECODING
+		} elseif (preg_match('/^(.+?): ;?\r\n/', $headerLine, $matches)) {
+			// if comes string aka "Subject: \r\n" - no subject
+			$this->key = strtolower($matches[1]);
+			$this->value = null;
 		}
 	}
 
@@ -54,9 +63,9 @@ class Header
 	}
 
 	/**
-	 * @return string
+	 * @return ?string
 	 */
-	public function getValue(): string
+	public function getValue(): ?string
 	{
 		return $this->value;
 	}

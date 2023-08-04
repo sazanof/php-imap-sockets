@@ -17,19 +17,21 @@ class MessageCollection extends Collection
 	public function __construct($msgNums, Mailbox $mailbox)
 	{
 		parent::__construct();
-		$this->msgNums = $msgNums;
+		$this->msgNums = array_values($msgNums);
 		$this->query = new FetchQuery();
 		$this->mailbox = $mailbox;
 		$this->connection = $mailbox->getConnection();
 
 		$this->findUids();
+		$flags = $this->findFlags();
 		$bodyStructure = $this->parseBodyStructure();
 		$headers = $this->findHeaders();
-		$this->map(function (/** @var Message $item */ $item) use ($headers, $bodyStructure) {
+		$this->map(function (/** @var Message $item */ $item) use ($headers, $bodyStructure, $flags) {
 			/** @var array $_headers */
 			$msgNum = $item->getNum();
 			$_headers = $headers->getHeaders()[$msgNum];
 			$item->setHeaders($_headers);
+			$item->setFlags($flags->get($msgNum));
 			$item->setBodyStructure($bodyStructure->getItem($msgNum)->getMultiPart());
 
 		});
@@ -49,6 +51,14 @@ class MessageCollection extends Collection
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return FlagsCollection
+	 */
+	public function findFlags(): FlagsCollection
+	{
+		return $this->mailbox->fetch($this->msgNums, $this->query->clear()->flags())->asCollection(FlagsCollection::class);
 	}
 
 	public function findHeaders()

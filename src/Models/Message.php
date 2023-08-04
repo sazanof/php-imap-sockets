@@ -8,6 +8,7 @@
 namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\Collection;
+use Sazanof\PhpImapSockets\Collections\FlagsCollection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
 
 class Message
@@ -16,14 +17,18 @@ class Message
 	protected int $num;
 	protected string $from;
 	protected string $to;
-	protected string $subject;
+	protected ?string $subject;
 	protected MessageHeadersCollection $headers;
 	protected ?MultiPart $bodyStructure;
 	protected bool $hasAttachments = false;
+	protected array $flags;
 
-	public function __construct()
+	/**
+	 * @param array $flags
+	 */
+	public function setFlags(array $flags): void
 	{
-
+		$this->flags = $flags;
 	}
 
 	/**
@@ -43,9 +48,9 @@ class Message
 	}
 
 	/**
-	 * @param string $subject
+	 * @param ?string $subject
 	 */
-	public function setSubject(string $subject): void
+	public function setSubject(?string $subject): void
 	{
 		$this->subject = $subject;
 	}
