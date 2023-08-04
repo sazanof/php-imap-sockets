@@ -6,10 +6,13 @@ A library for working with email, using sockets.
 
 ## Features
 
-- Light/dark mode toggle
-- Live previews
-- Fullscreen mode
-- Cross platform
+- All flags
+- Bodystructure analize via [BODYSTRUCTURE] command
+- Flexible search and fetch
+
+### Todo
+
+- Sorting
 
 ## Install via composer
 
