@@ -19,5 +19,7 @@
       "name": "Mikhail Sazanov",
       "email": "m@sazanof.ru"
     }
-  ]
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
