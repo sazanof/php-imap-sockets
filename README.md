@@ -2,10 +2,11 @@
 
 # PHP IMAP SOCKETS
 
-A library for working with email, using sockets.
+NEW library for working with email, using sockets.
 
 ## Features
 
+- Dependency free
 - All flags
 - Bodystructure analize via [BODYSTRUCTURE] command
 - Flexible search and fetch
