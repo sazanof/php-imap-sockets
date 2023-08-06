@@ -33,6 +33,8 @@ class MessageCollection extends Collection
 			$item->setHeaders($_headers);
 			$item->setFlags($flags->get($msgNum));
 			$item->setBodyStructure($bodyStructure->getItem($msgNum)->getMultiPart());
+			$item->setMailbox($this->mailbox);
+			dd($item->getBody());
 		});
 	}
 
@@ -80,7 +82,6 @@ class MessageCollection extends Collection
 			)
 		);
 		return new HeadersCollection($this->connection->lastResponse());
-
 	}
 
 	/**

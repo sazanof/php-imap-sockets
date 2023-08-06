@@ -8,7 +8,9 @@
 namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\AddressesCollection;
+use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
+use Sazanof\PhpImapSockets\Query\FetchQuery;
 
 class Message
 {
@@ -23,13 +25,78 @@ class Message
 	protected \DateTime $date;
 	protected MessageHeadersCollection $headers;
 	protected ?MultiPart $bodyStructure;
+	protected ?Mailbox $mailbox = null;
+	protected string $boundary;
+	protected string $contentType;
 	protected bool $hasAttachments = false;
 	protected array $flags;
+	protected ?string $body = null;
+	protected ?Collection $attachments = null;
 
 	public function __construct()
 	{
 
 	}
+
+	/**
+	 * @param array|MessageHeadersCollection $headers
+	 * @return void
+	 * @throws \Exception
+	 */
+	public function setHeaders(array|MessageHeadersCollection $headers): void
+	{
+		$this->headers = $headers instanceof MessageHeadersCollection ? $headers : new MessageHeadersCollection($headers);
+		$this->setMessageId(
+			$this->getHeaders()->getHeader('message-id')->getValue()
+		);
+		$this->setSubject(
+			$this->getHeaders()->getHeader('subject')->getValue()
+		);
+		$this->setDate(
+			new \DateTime(
+				$this->getHeaders()->getHeader('date')->getValue()
+			)
+		);
+		$this->setFrom(
+			$this->getHeaders()->getHeader('from')->getValue()
+		);
+		$this->setTo(
+			$this->getHeaders()->getHeader('to')->getValue()
+		);
+
+		$contentType = $this->getHeaders()->getHeader('content-type')->getValue();
+		if (preg_match('/^(.*?)\/(.*?);boundary="(.*?)"$/', $contentType, $matches)) {
+			$this->setBoundary($matches[3]);
+			$ct = "$matches[1]/$matches[2]";
+		} else {
+			$ct = $contentType;
+		}
+		$this->setContentType($ct);
+
+	}
+
+	/**
+	 * @param Mailbox $mailbox
+	 */
+	public function setMailbox(Mailbox $mailbox): void
+	{
+		$this->mailbox = $mailbox;
+	}
+
+	public function getBody()
+	{
+		if (!is_null($this->mailbox)) {
+			$q = new FetchQuery();
+			return $this->mailbox->fetch([$this->num], $q->rfc822Text());
+		}
+		return null;
+	}
+
+	public function getAttachments()
+	{
+
+	}
+
 
 	/**
 	 * @param array $flags
@@ -181,39 +248,51 @@ class Message
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getBoundary(): string
+	{
+		return $this->boundary;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getContentType(): string
+	{
+		return $this->contentType;
+	}
+
+	/**
+	 * @return Mailbox|null
+	 */
+	public function getMailbox(): ?Mailbox
+	{
+		return $this->mailbox;
+	}
+
+	/**
+	 * @param string $boundary
+	 */
+	public function setBoundary(string $boundary): void
+	{
+		$this->boundary = $boundary;
+	}
+
+	/**
+	 * @param string $contentType
+	 */
+	public function setContentType(string $contentType): void
+	{
+		$this->contentType = $contentType;
+	}
+
+	/**
 	 * @return \DateTime
 	 */
 	public function getDate(): \DateTime
 	{
 		return $this->date;
-	}
-
-	/**
-	 * @param array|MessageHeadersCollection $headers
-	 * @return void
-	 * @throws \Exception
-	 */
-	public function setHeaders(array|MessageHeadersCollection $headers): void
-	{
-		$this->headers = $headers instanceof MessageHeadersCollection ? $headers : new MessageHeadersCollection($headers);
-		$this->setMessageId(
-			$this->getHeaders()->getHeader('message-id')->getValue()
-		);
-		$this->setSubject(
-			$this->getHeaders()->getHeader('subject')->getValue()
-		);
-		$this->setDate(
-			new \DateTime(
-				$this->getHeaders()->getHeader('date')->getValue()
-			)
-		);
-		$this->setFrom(
-			$this->getHeaders()->getHeader('from')->getValue()
-		);
-		$this->setTo(
-			$this->getHeaders()->getHeader('to')->getValue()
-		);
-
 	}
 
 	/**
