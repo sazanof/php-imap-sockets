@@ -16,7 +16,7 @@ class Message
 	protected int $num;
 	protected string $messageId;
 	protected string|Address $from;
-	protected string|Address $to;
+	protected string|AddressesCollection $to;
 	protected string|AddressesCollection $cc;
 	protected string|AddressesCollection $bcc;
 	protected ?string $subject;
@@ -98,10 +98,13 @@ class Message
 	}
 
 	/**
-	 * @param string $to
+	 * @param AddressesCollection|string $to
 	 */
-	public function setTo(string $to): void
+	public function setTo(string|AddressesCollection $to): void
 	{
+		if (is_string($to)) {
+			$to = new AddressesCollection($to);
+		}
 		$this->to = $to;
 	}
 
@@ -206,6 +209,9 @@ class Message
 		);
 		$this->setFrom(
 			$this->getHeaders()->getHeader('from')->getValue()
+		);
+		$this->setTo(
+			$this->getHeaders()->getHeader('to')->getValue()
 		);
 
 	}

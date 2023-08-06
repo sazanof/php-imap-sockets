@@ -14,50 +14,31 @@ class HeadersCollection extends Collection
 	{
 		parent::__construct();
 		$lines = [];
-		$num = null;
-		$prevLine = null;
+		$num = 0;
 		if ($response->isOk()) {
 			$i = 0;
-			$newLine = '';
-			foreach ($response->lines() as $line) {
-				$append = true;
+			$lastIndex = 0;
+			$responseLines = $response->lines();
+			foreach ($responseLines as $line) {
 				if (preg_match('/\* (\d+) FETCH /', $line, $matches)) {
 					$num = (int)$matches[1];
 					$this->headers[$num] = [];
-					$append = false;
 				}
 				if ($line !== $response->lastLine() && $line !== "\r\n" && $line !== ")\r\n") {
-					if (str_starts_with($line, "\tboundary")) {
-						$this->boundary = $this->getBoundary($line);
-						continue;
-					} elseif (!is_null($prevLine)) {
-						if ((str_starts_with($line, "\t") || str_starts_with($line, " ")) && !str_contains($line, "\tboundary")) {
-							$line = trim($line, "\t\r\n ");
-							$newLine .= trim($line, "\t\r\n ");
-							$append = false;
-						} else {
-							if (!empty($newLine)) {
-								$newLine = rtrim($prevLine, "\r\n") . "$newLine\r\n";
-								if ($this->isUtf8($newLine)) {
-									$newLine = $this->clearJoinedStringFromCharset($newLine);
-								}
-								$lines[array_key_last($lines)] = new Header($newLine);
-								$newLine = '';
-								$append = false;
-							}
+
+					if (preg_match('/^(.*?): (.*?)\r\n/', $line, $matches)) {
+						$lines[$i] = trim($line);
+						$lastIndex = $i;
+					} else {
+						if (array_key_exists($lastIndex, $lines)) {
+							$lines[$lastIndex] .= trim($line);
 						}
 					}
-					if ($append) {
-						$lines[] = new Header($line);
-						$prevLine = $line;
-						$i++;
-					}
-
-				} elseif ($line === ")\r\n" && !is_null($num)) {
-					$this->headers[$num] = $lines;
-					$lines = [];
-					$prevLine = null;
 				}
+				$i++;
+			}
+			foreach ($lines as $header) {
+				$this->headers[$num][] = new Header($header);
 			}
 		}
 	}

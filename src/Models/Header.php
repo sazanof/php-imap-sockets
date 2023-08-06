@@ -10,7 +10,7 @@ class Header
 
 	public function __construct(string $headerLine)
 	{
-		if (preg_match('/^(.+?): (.+?);?\r\n/', $headerLine, $matches)) {
+		if (preg_match('/^(.*?): (.+?)$/', $headerLine, $matches)) {
 			$this->key = strtolower($matches[1]);
 			////////// TODO WRAP THIS SEPARATE
 			if ($this->isUtf8($matches[2])) {
