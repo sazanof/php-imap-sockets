@@ -20,6 +20,13 @@ class SearchResponse
 		return $this;
 	}
 
+	public function setOrderDirection($orderDirection = 'DESC')
+	{
+		strtoupper($orderDirection) === 'DESC' ? arsort($this->nums) : asort($this->nums);
+		$this->nums = array_values($this->nums);
+		return $this;
+	}
+
 	public function msgNums()
 	{
 		return $this->nums;

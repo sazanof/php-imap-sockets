@@ -7,21 +7,29 @@
 
 namespace Sazanof\PhpImapSockets\Models;
 
-use Sazanof\PhpImapSockets\Collections\Collection;
-use Sazanof\PhpImapSockets\Collections\FlagsCollection;
+use Sazanof\PhpImapSockets\Collections\AddressesCollection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
 
 class Message
 {
 	protected int $uid;
 	protected int $num;
-	protected string $from;
-	protected string $to;
+	protected string $messageId;
+	protected string|Address $from;
+	protected string|Address $to;
+	protected string|AddressesCollection $cc;
+	protected string|AddressesCollection $bcc;
 	protected ?string $subject;
+	protected \DateTime $date;
 	protected MessageHeadersCollection $headers;
 	protected ?MultiPart $bodyStructure;
 	protected bool $hasAttachments = false;
 	protected array $flags;
+
+	public function __construct()
+	{
+
+	}
 
 	/**
 	 * @param array $flags
@@ -37,6 +45,22 @@ class Message
 	public function setUid(int $uid): void
 	{
 		$this->uid = $uid;
+	}
+
+	/**
+	 * @param string $messageId
+	 */
+	public function setMessageId(string $messageId): void
+	{
+		$this->messageId = $messageId;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMessageId(): string
+	{
+		return $this->messageId;
 	}
 
 	/**
@@ -65,11 +89,60 @@ class Message
 	}
 
 	/**
-	 * @param string $from
+	 * @param string|Address $from
+	 * @return void
 	 */
-	public function setFrom(string $from): void
+	public function setFrom(string|Address $from): void
 	{
-		$this->from = $from;
+		$this->from = $from instanceof Address ? $from : Address::firstFromString($from);
+	}
+
+	/**
+	 * @param string $to
+	 */
+	public function setTo(string $to): void
+	{
+		$this->to = $to;
+	}
+
+	/**
+	 * @param AddressesCollection|string $bcc
+	 */
+	public function setBcc(AddressesCollection|string $bcc): void
+	{
+		$this->bcc = $bcc;
+	}
+
+	/**
+	 * @param AddressesCollection|string $cc
+	 */
+	public function setCc(AddressesCollection|string $cc): void
+	{
+		$this->cc = $cc;
+	}
+
+	/**
+	 * @return AddressesCollection|string
+	 */
+	public function getBcc(): AddressesCollection|string
+	{
+		return $this->bcc;
+	}
+
+	/**
+	 * @return AddressesCollection|string
+	 */
+	public function getCc(): AddressesCollection|string
+	{
+		return $this->cc;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getFlags(): array
+	{
+		return $this->flags;
 	}
 
 	/**
@@ -97,15 +170,44 @@ class Message
 	}
 
 	/**
+	 * @param \DateTime $date
+	 */
+	public function setDate(\DateTime $date): void
+	{
+		$this->date = $date;
+	}
+
+	/**
+	 * @return \DateTime
+	 */
+	public function getDate(): \DateTime
+	{
+		return $this->date;
+	}
+
+	/**
 	 * @param array|MessageHeadersCollection $headers
+	 * @return void
+	 * @throws \Exception
 	 */
 	public function setHeaders(array|MessageHeadersCollection $headers): void
 	{
 		$this->headers = $headers instanceof MessageHeadersCollection ? $headers : new MessageHeadersCollection($headers);
-		$s = $this->getHeaders()->getValue('subject');
-		if (!empty($s)) {
-			$this->setSubject($s[0]->getValue());
-		}
+		$this->setMessageId(
+			$this->getHeaders()->getHeader('message-id')->getValue()
+		);
+		$this->setSubject(
+			$this->getHeaders()->getHeader('subject')->getValue()
+		);
+		$this->setDate(
+			new \DateTime(
+				$this->getHeaders()->getHeader('date')->getValue()
+			)
+		);
+		$this->setFrom(
+			$this->getHeaders()->getHeader('from')->getValue()
+		);
+
 	}
 
 	/**

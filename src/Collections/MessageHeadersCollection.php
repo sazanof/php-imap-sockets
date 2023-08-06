@@ -8,12 +8,13 @@ class MessageHeadersCollection extends Collection
 {
 	/**
 	 * @param string $key
-	 * @return array|Header[]
+	 * @return Header|null
 	 */
-	public function getValue(string $key)
+	public function getHeader(string $key)
 	{
-		return $this->find(function ($header) use ($key) {
+		$header = $this->find(function ($header) use ($key) {
 			return $header->getKey() === $key;
 		});
+		return !empty($header) ? $header[0] : null;
 	}
 }

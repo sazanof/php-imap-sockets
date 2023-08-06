@@ -33,7 +33,6 @@ class MessageCollection extends Collection
 			$item->setHeaders($_headers);
 			$item->setFlags($flags->get($msgNum));
 			$item->setBodyStructure($bodyStructure->getItem($msgNum)->getMultiPart());
-
 		});
 	}
 
@@ -61,21 +60,23 @@ class MessageCollection extends Collection
 		return $this->mailbox->fetch($this->msgNums, $this->query->clear()->flags())->asCollection(FlagsCollection::class);
 	}
 
-	public function findHeaders()
+	public function findHeaders(array $fields = [
+		'From',
+		'To',
+		'Cc',
+		'Bcc',
+		'Date',
+		'Message-ID',
+		'Reply-To',
+		'Return-Path',
+		'Subject',
+		'Content-Type'
+	])
 	{
 		$this->mailbox->fetch(
 			$this->msgNums,
 			$this->query->clear()->body(
-				FetchQuery::BODY_HEADER_FIELDS, [
-					'From',
-					'To',
-					'Date',
-					'Message-ID',
-					'Reply-To',
-					'Return-Path',
-					'Subject',
-					'Content-Type'
-				]
+				FetchQuery::BODY_HEADER_FIELDS, $fields
 			)
 		);
 		return new HeadersCollection($this->connection->lastResponse());

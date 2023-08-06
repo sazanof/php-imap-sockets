@@ -45,7 +45,6 @@ class HeadersCollection extends Collection
 								$newLine = '';
 								$append = false;
 							}
-
 						}
 					}
 					if ($append) {

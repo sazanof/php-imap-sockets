@@ -96,7 +96,7 @@ class Paginator
 
 	private function updateStart()
 	{
-		$this->start = $this->page * $this->limit - 1;
+		$this->start = $this->page * $this->limit - $this->limit;
 	}
 
 	/**
