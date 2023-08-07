@@ -16,9 +16,9 @@ class AttachmentPart extends BasePart
 	protected ?string $location = null;
 
 
-	public function __construct(array $matches)
+	public function __construct(array $matches, string $section)
 	{
-		parent::__construct($matches);
+		parent::__construct($matches, $section);
 		$this->prepareName($matches[3]);
 		$this->prepareFileName($matches[9]);
 		$this->contentId = trim($matches[4], '"');

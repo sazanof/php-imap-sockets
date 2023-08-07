@@ -34,7 +34,7 @@ class MessageCollection extends Collection
 			$item->setFlags($flags->get($msgNum));
 			$item->setBodyStructure($bodyStructure->getItem($msgNum)->getMultiPart());
 			$item->setMailbox($this->mailbox);
-			dd($item->getBody());
+			//dd($item->getBody());
 		});
 	}
 

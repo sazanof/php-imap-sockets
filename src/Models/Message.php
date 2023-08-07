@@ -83,11 +83,11 @@ class Message
 		$this->mailbox = $mailbox;
 	}
 
-	public function getBody()
+	public function getBody(string $section)
 	{
 		if (!is_null($this->mailbox)) {
 			$q = new FetchQuery();
-			return $this->mailbox->fetch([$this->num], $q->rfc822Text());
+			return $this->mailbox->fetch([$this->num], $q->body($section));
 		}
 		return null;
 	}

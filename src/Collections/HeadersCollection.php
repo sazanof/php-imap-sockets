@@ -22,23 +22,27 @@ class HeadersCollection extends Collection
 			foreach ($responseLines as $line) {
 				if (preg_match('/\* (\d+) FETCH /', $line, $matches)) {
 					$num = (int)$matches[1];
-					$this->headers[$num] = [];
+					$i = 0;
+					$lines[$num] = [];
 				}
 				if ($line !== $response->lastLine() && $line !== "\r\n" && $line !== ")\r\n") {
 
 					if (preg_match('/^(.*?): (.*?)\r\n/', $line, $matches)) {
-						$lines[$i] = trim($line);
+						$lines[$num][$i] = trim($line);
 						$lastIndex = $i;
 					} else {
-						if (array_key_exists($lastIndex, $lines)) {
-							$lines[$lastIndex] .= trim($line);
+						if (array_key_exists($lastIndex, $lines[$num])) {
+							$lines[$num][$lastIndex] .= trim($line);
 						}
 					}
 				}
 				$i++;
 			}
-			foreach ($lines as $header) {
-				$this->headers[$num][] = new Header($header);
+			foreach ($lines as $msgNum => $headersArray) {
+				foreach ($headersArray as $header) {
+					$this->headers[$msgNum][] = new Header($header);
+				}
+
 			}
 		}
 	}

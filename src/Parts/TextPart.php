@@ -8,9 +8,9 @@ class TextPart extends BasePart
 {
 	protected string $charset;
 
-	public function __construct(array $matches)
+	public function __construct(array $matches, string $section)
 	{
-		parent::__construct($matches);
+		parent::__construct($matches, $section);
 		$this->type = 'text';//TODO bug in regexp
 		$this->mimeType = "text/$matches[1]"; //TODO bug in regexp
 		$this->subtype = $matches[1];//TODO bug in regexp

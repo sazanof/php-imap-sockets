@@ -2,19 +2,66 @@
 
 namespace Sazanof\PhpImapSockets\Parts;
 
+use Sazanof\PhpImapSockets\Collections\Collection;
+
 class BasePart
 {
 	protected string $type;
 	protected string $subtype;
 	protected string $mimeType;
+	protected string $section;
+	protected Collection $children;
 
-	public function __construct(array $matches)
+	public function __construct(array $matches, string $section)
 	{
+		$this->children = new Collection();
+		$this->setSection($section);
 		$this->type = $matches[1];
 		$this->subtype = $matches[2];
 		$this->mimeType = "$matches[1]/$matches[2]";
 	}
 
+	/**
+	 * @param Collection $children
+	 */
+	public function setChildren(Collection $children): void
+	{
+		$this->children = $children;
+	}
+
+	public function addChild(mixed $child)
+	{
+		$this->children->add($child);
+	}
+
+	/**
+	 * @return Collection
+	 */
+	public function getChildren(): Collection
+	{
+		return $this->children;
+	}
+
+	public function hasChildren()
+	{
+		return $this->getChildren()->count() > 0;
+	}
+
+	/**
+	 * @param string $section
+	 */
+	public function setSection(string $section): void
+	{
+		$this->section = $section;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSection(): string
+	{
+		return $this->section;
+	}
 
 	protected function setValue(string $value): ?string
 	{

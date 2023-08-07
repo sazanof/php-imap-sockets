@@ -26,6 +26,11 @@ class Collection
 		$this->collection[] = $item;
 	}
 
+	public function count()
+	{
+		return count($this->collection);
+	}
+
 	public function empty()
 	{
 		$this->collection = [];
@@ -74,6 +79,11 @@ class Collection
 	public function first()
 	{
 		return count($this->collection) > 0 ? $this->collection[0] : null;
+	}
+
+	public function last()
+	{
+		return end($this->collection);
 	}
 
 	public function length()

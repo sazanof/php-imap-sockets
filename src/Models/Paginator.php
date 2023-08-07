@@ -39,6 +39,9 @@ class Paginator
 			ARRAY_FILTER_USE_KEY);
 	}
 
+	/**
+	 * @return Message[]
+	 */
 	public function messages()
 	{
 		$this->messages = new MessageCollection($this->uidsByPage, $this->mailbox);
