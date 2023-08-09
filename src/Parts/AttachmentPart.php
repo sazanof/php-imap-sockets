@@ -2,6 +2,8 @@
 
 namespace Sazanof\PhpImapSockets\Parts;
 
+use Sazanof\PhpImapSockets\Response\AttachmentBodyResponse;
+
 class AttachmentPart extends BasePart
 {
 	protected string $originalName;
@@ -14,6 +16,7 @@ class AttachmentPart extends BasePart
 	protected bool $isInline = false;
 	protected ?string $language = null;
 	protected ?string $location = null;
+	protected ?string $content = null;
 
 
 	public function __construct(array $matches, string $section)
@@ -34,6 +37,33 @@ class AttachmentPart extends BasePart
 	public function isInline(): bool
 	{
 		return $this->isInline;
+	}
+
+
+	/**
+	 * @return string|null
+	 */
+	public function getContent(): ?string
+	{
+		return $this->content;
+	}
+
+	/**
+	 * @param string|AttachmentBodyResponse|null $content
+	 */
+	public function setContent(string|AttachmentBodyResponse|null $content): void
+	{
+		if ($content instanceof AttachmentBodyResponse) {
+			$content = $content->getContent();
+		}
+
+		if ($this->getEncoding() === 'base64') {
+			$content = base64_decode($content);
+		} elseif ($this->getEncoding() === 'quoted-printable') {
+			$content = quoted_printable_decode($content);
+		}
+
+		$this->content = $content;
 	}
 
 	public function fillValuesFromMatches()
@@ -72,5 +102,53 @@ class AttachmentPart extends BasePart
 		if (preg_match('/=\?(.+?)\?/', $this->originalName, $matches)) {
 			$this->encoding = strtoupper($matches[1]);
 		}
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSize(): int
+	{
+		return $this->size;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEncoding(): string
+	{
+		return $this->encoding;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getDisposition(): string
+	{
+		return $this->disposition;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getFileName(): string
+	{
+		return $this->fileName;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOriginalName(): string
+	{
+		return $this->originalName;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getContentId(): ?string
+	{
+		return $this->contentId;
 	}
 }

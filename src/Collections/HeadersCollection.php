@@ -52,12 +52,6 @@ class HeadersCollection extends Collection
 		return str_contains(strtoupper($string), '=?UTF-8');
 	}
 
-	public function clearJoinedStringFromCharset(string $text): string
-	{
-		$string = preg_replace('/\?=(=\?.*?\?.\?)(.*?)/i', '', $text);
-
-		return $string;
-	}
 
 	public function getBoundary($line)
 	{

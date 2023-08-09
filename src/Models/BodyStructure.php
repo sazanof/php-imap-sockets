@@ -68,6 +68,7 @@ class BodyStructure
 	protected function analizeBodyParts(string $string, MultiPart $parentMultipart = null, $depth = 1, $level = '')
 	{
 		$section = explode('.', $level);
+		dump($section, $level);
 		if (str_starts_with($string, '((')) {
 			if (preg_match('/\((.*)\)/', $string, $matches)) {
 				if (str_starts_with($matches[1], '("')) {
@@ -75,6 +76,7 @@ class BodyStructure
 						// We get a multipart
 						if (preg_match($this->parseOneSectionRe, $matches[1], $multipart)) {
 							//dump("depth $depth (root)", $string);
+
 							$nextPart = $multipart[0];
 							$multipartSubtype = $multipart[2];
 							$multipartBoundary = $multipart[3];
@@ -85,22 +87,20 @@ class BodyStructure
 							$newMpAnyway = new MultiPart($multipart, '1');
 							$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : $newMpAnyway;
 							$next = str_replace(" \"$multipartSubtype\" ($multipartBoundary) $multipartDisposition $multipartLanguage $multipartLocation", '', $nextPart);
-
 							$depth++;
-							$count = is_null($parentMultipart) ? 0 : $parentMultipart->getParts()->count() + 1;
 							if ($parentMultipart !== $newMpAnyway) {
-								$section[array_key_last($section)] = $count;
-								$level = implode('.', $section);
-								dump("$level (root)", $depth, $string);
 								$newMpAnyway->setSection($level);
 								//TODO не добавлять children, убрать этот параметр или перенести это в part
 								/** @var BasePart $lastPart */
-								$lastPart = $parentMultipart->getParts()->last();
+								$section[$depth - 1] = $parentMultipart->getParts()->count();
+								$level = implode('.', $section);
 								$parentMultipart->getParts()->add(
 									$this->analizeBodyParts($next, $newMpAnyway, $depth, $level));
-								//$parentMultipart->addChild($this->analizeBodyParts($next, $newMpAnyway, $depth, $level));
 							} else {
 								$newMpAnyway = new MultiPart($multipart, $level);
+								$section[] = 1;
+								$level = implode('.', $section);
+
 								$parentMultipart = $this->analizeBodyParts($next, $newMpAnyway, $depth, $level);
 								$this->multiPart = $parentMultipart;
 							}
@@ -109,14 +109,12 @@ class BodyStructure
 						dd('file multipart detected');
 					}
 				} else {
-					$depth++;
+					//$depth++;
 					$parentMultipart = $this->analizeBodyParts($matches[1], $parentMultipart, $depth, $level);
 				}
 			}
 		} else {
-			$count = is_null($parentMultipart) ? 1 : $parentMultipart->getParts()->count() + 1;
-			$section[$depth - 1] = $count;
-			$level = implode('.', $section);
+			$count = is_null($parentMultipart) ? 1 : $parentMultipart->getParts()->count();
 
 			// (" come
 			//We get single part;
@@ -126,6 +124,10 @@ class BodyStructure
 					$partToDelete = $matches[0];
 					$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : new MultiPart($matches, $level);
 					$parentMultipart->getParts()->add(new TextPart($matches, $level));
+
+					$section[array_key_last($section)]++;
+					$level = implode('.', $section);
+
 					$string = str_replace($partToDelete, '', $string);
 					if (!empty($string)) {
 						$this->analizeBodyParts($string, $parentMultipart, $depth, $level);

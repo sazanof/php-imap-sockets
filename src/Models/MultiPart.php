@@ -22,7 +22,13 @@ class MultiPart
 		$this->subtype = isset($matches[2]) && in_array($matches[2], ['alternative', 'related', 'mixed']) ? $matches[2] : null;
 	}
 
-	public function getTextParts(MultiPart|TextPart|AttachmentPart $part = null, array $out = [])
+	/**
+	 * @param MultiPart|TextPart|AttachmentPart|null $part
+	 * @param array $out
+	 * @return array|TextPart[]
+	 * @todo DRY
+	 */
+	public function getTextParts(MultiPart|TextPart|AttachmentPart $part = null, array $out = []): array
 	{
 		/** @var MultiPart|TextPart|AttachmentPart $part */
 		$partToForeach = is_null($part) ? $this : $part;
@@ -31,6 +37,26 @@ class MultiPart
 				$out[] = $_part;
 			} elseif ($_part instanceof MultiPart) {
 				$out = $this->getTextParts($_part, $out);
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * @param MultiPart|AttachmentPart|null $part
+	 * @param array|AttachmentPart[] $out
+	 * @return array
+	 * @todo DRY
+	 */
+	public function getAttachmentParts(MultiPart|AttachmentPart $part = null, array $out = []): array
+	{
+		/** @var MultiPart|AttachmentPart $part */
+		$partToForeach = is_null($part) ? $this : $part;
+		foreach ($partToForeach->getParts()->items() as $_part) {
+			if ($_part instanceof AttachmentPart) {
+				$out[] = $_part;
+			} elseif ($_part instanceof MultiPart) {
+				$out = $this->getAttachmentParts($_part, $out);
 			}
 		}
 		return $out;

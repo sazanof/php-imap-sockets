@@ -11,6 +11,7 @@ use Sazanof\PhpImapSockets\Collections\AddressesCollection;
 use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
+use Sazanof\PhpImapSockets\Response\AttachmentBodyResponse;
 
 class Message
 {
@@ -328,5 +329,11 @@ class Message
 	public function getTo(): string
 	{
 		return $this->to;
+	}
+
+	public function getAttachment(string $part)
+	{
+		$fq = new FetchQuery();
+		return $this->getMailbox()->fetch([$this->getNum()], $fq->body($part))->asCollection(AttachmentBodyResponse::class);
 	}
 }

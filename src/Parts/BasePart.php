@@ -89,4 +89,28 @@ class BasePart
 	{
 		return str_starts_with(strtoupper($string), '=?UTF-8');
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getSubtype(): string
+	{
+		return $this->subtype;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMimeType(): string
+	{
+		return $this->mimeType;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getType(): string
+	{
+		return $this->type;
+	}
 }
