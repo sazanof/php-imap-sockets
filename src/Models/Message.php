@@ -12,6 +12,7 @@ use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
 use Sazanof\PhpImapSockets\Response\AttachmentBodyResponse;
+use Sazanof\PhpImapSockets\Response\BodyResponse;
 
 class Message
 {
@@ -32,7 +33,6 @@ class Message
 	protected bool $hasAttachments = false;
 	protected array $flags;
 	protected ?string $body = null;
-	protected ?Collection $attachments = null;
 
 	public function __construct()
 	{
@@ -84,18 +84,25 @@ class Message
 		$this->mailbox = $mailbox;
 	}
 
+	/**
+	 * @param string $section
+	 * @return BodyResponse|string|null
+	 */
 	public function getBody(string $section)
 	{
 		if (!is_null($this->mailbox)) {
 			$q = new FetchQuery();
-			return $this->mailbox->fetch([$this->num], $q->body($section));
+			return $this->mailbox->fetch([$this->num], $q->body($section))->asCollection(BodyResponse::class);
 		}
 		return null;
 	}
 
-	public function getAttachments()
+	/**
+	 * @return bool
+	 */
+	public function isHasAttachments(): bool
 	{
-
+		return $this->hasAttachments;
 	}
 
 

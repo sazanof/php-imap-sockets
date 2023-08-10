@@ -12,6 +12,7 @@ class MultiPart
 	protected ?string $subtype;
 	protected bool $attachmentsExists = false;
 	protected ?int $attachmentsCount = null;
+	protected ?string $boundary = null;
 	protected Collection $parts;
 
 	public function __construct(array $matches, string $section)
@@ -20,6 +21,23 @@ class MultiPart
 		$this->parts = new Collection();
 		// quick fix
 		$this->subtype = isset($matches[2]) && in_array($matches[2], ['alternative', 'related', 'mixed']) ? $matches[2] : null;
+		$this->setBoundary(preg_replace('/"boundary" "|"?/', '', $matches[3]));
+	}
+
+	/**
+	 * @param string|null $boundary
+	 */
+	public function setBoundary(?string $boundary): void
+	{
+		$this->boundary = $boundary;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getBoundary(): ?string
+	{
+		return $this->boundary;
 	}
 
 	/**
@@ -33,7 +51,7 @@ class MultiPart
 		/** @var MultiPart|TextPart|AttachmentPart $part */
 		$partToForeach = is_null($part) ? $this : $part;
 		foreach ($partToForeach->getParts()->items() as $_part) {
-			if ($_part instanceof TextPart) {
+			if ($_part instanceof TextPart || ($_part instanceof AttachmentPart && $_part->isInline())) {
 				$out[] = $_part;
 			} elseif ($_part instanceof MultiPart) {
 				$out = $this->getTextParts($_part, $out);

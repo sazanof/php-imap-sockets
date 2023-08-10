@@ -7,6 +7,8 @@
 
 namespace Sazanof\PhpImapSockets;
 
+use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
+
 class Socket
 {
 	/**
@@ -147,5 +149,13 @@ class Socket
 			fclose($this->resource);
 			$this->resource = null;
 		}
+	}
+
+	/**
+	 * @return resource|null
+	 */
+	public function getResource()
+	{
+		return $this->resource;
 	}
 }
