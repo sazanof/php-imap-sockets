@@ -9,8 +9,7 @@ use Sazanof\PhpImapSockets\Parts\TextPart;
 class BodyStructure
 {
 	private string $structRegExp = '/BODYSTRUCTURE ?\((.*)?\)/';
-	private string $groupRegExp = '/\(((?>[^()]+)|(?R))*\)/';
-	private string $bracesRegExp = '/(?=\(((?:[^()]++|\((?1)\))++)\))/';
+	private string $groupRegExp = '/\(((?>[^()]+)|(?R))*\)/'; // todo replace this reg exp, case root not parsing!!!
 	private string $parseOneSectionRe = '/\((.+)\) "(related|alternative|mixed)" \((.*?)\) (.*?) (.*?) (.*?)$/i';
 	private string $parseOneTextRe = '/\("text" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) (.*?) (.*?) (.*?) (.*?)\)/i';
 	private string $parseOneFileRe = '/\("(image|video|application)" "(.*?)" \((.+?)\) (.*?) (.*?) "(.*?)" (\d+|NIL) (\d+|NIL) \((.*?)\) (.*?) (.*?)\)/';
@@ -30,6 +29,7 @@ class BodyStructure
 				$match = $matches[1];
 			}
 			$groups = $this->groups($match);
+			//dd($groups);
 			$i = 1;
 			foreach ($groups as $group) {
 				if (is_null($this->multiPart)) {
@@ -68,7 +68,6 @@ class BodyStructure
 	protected function analizeBodyParts(string $string, MultiPart $parentMultipart = null, $depth = 1, $level = '')
 	{
 		$section = explode('.', $level);
-		dump($section, $level);
 		if (str_starts_with($string, '((')) {
 			if (preg_match('/\((.*)\)/', $string, $matches)) {
 				if (str_starts_with($matches[1], '("')) {
@@ -76,7 +75,6 @@ class BodyStructure
 						// We get a multipart
 						if (preg_match($this->parseOneSectionRe, $matches[1], $multipart)) {
 							//dump("depth $depth (root)", $string);
-
 							$nextPart = $multipart[0];
 							$multipartSubtype = $multipart[2];
 							$multipartBoundary = $multipart[3];
@@ -86,7 +84,11 @@ class BodyStructure
 
 							$newMpAnyway = new MultiPart($multipart, '1');
 							$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : $newMpAnyway;
-							$next = str_replace(" \"$multipartSubtype\" ($multipartBoundary) $multipartDisposition $multipartLanguage $multipartLocation", '', $nextPart);
+							$next = str_replace(
+								" \"$multipartSubtype\" ($multipartBoundary) $multipartDisposition $multipartLanguage $multipartLocation",
+								'',
+								$nextPart
+							);
 							$depth++;
 							if ($parentMultipart !== $newMpAnyway) {
 								$newMpAnyway->setSection($level);
@@ -114,11 +116,6 @@ class BodyStructure
 				}
 			}
 		} else {
-			$count = is_null($parentMultipart) ? 1 : $parentMultipart->getParts()->count();
-
-			// (" come
-			//We get single part;
-			//dump("depth $depth", $string);
 			if (str_starts_with($string, '("text')) {
 				if (preg_match($this->parseOneTextRe, $string, $matches)) {
 					$partToDelete = $matches[0];
@@ -134,19 +131,28 @@ class BodyStructure
 					}
 				}
 			} else {
-				if (preg_match($this->parseOneFileRe, $string, $matches)) {
-					$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : new MultiPart($matches, $level);
-					$attachment = new AttachmentPart($matches, $level);
-					if (!$attachment->isInline()) {
-						if (is_null($parentMultipart))
-							$parentMultipart->plusOneToAttachmentsCount();
-						if (!$parentMultipart->isAttachmentsExists()) {
-							$parentMultipart->setAttachmentsExists(true);
-						}
-					}
+				if (preg_match_all($this->groupRegExp, $string, $groups)) { // case we can have ("image"....)("image"...)
+					$i = 0;
+					foreach ($groups[0] as $fileString) {
+						if (preg_match($this->parseOneFileRe, $fileString, $matches)) {
+							$parentMultipart = $parentMultipart instanceof MultiPart ? $parentMultipart : new MultiPart($matches, $level);
+							$attachment = new AttachmentPart($matches, $level);
+							if (!$attachment->isInline()) {
+								if (is_null($parentMultipart))
+									$parentMultipart->plusOneToAttachmentsCount();
+								if (!$parentMultipart->isAttachmentsExists()) {
+									$parentMultipart->setAttachmentsExists(true);
+								}
+							}
 
-					$parentMultipart->getParts()->add($attachment);
+							$parentMultipart->getParts()->add($attachment);
+							$section[array_key_last($section)]++;
+							$level = implode('.', $section);
+						}
+						$i++;
+					}
 				}
+
 			}
 		}
 		return $parentMultipart;
