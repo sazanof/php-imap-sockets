@@ -72,6 +72,8 @@ $path = 'INBOX';
 $mailbox = $connection->getMailboxByPath($path)->setConnection($connection)->select();
 // array of messages NUMBERS (not UIDS)
 $uids = $mailbox->search($query)->msgNums();
+// or 
+$mailbox->search($query)->setOrderDirection('DESC')->msgNums() // or ASC
 ```
 
 ### Messages
