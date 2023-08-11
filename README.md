@@ -93,6 +93,48 @@ $paginator = new \Sazanof\PhpImapSockets\Models\Paginator($uids, $mailbox, 1, 6)
 $messagesPaginated = $p->messages();
 ```
 
+### Attachments
+
+```php
+/** @var \Sazanof\PhpImapSockets\Models\Message $message **/
+$attachmentsParts = $message->getBodyStructure()->getAttachmentParts();
+foreach ($attachmentsParts as $attachmentsPart) {
+    if (!$attachmentsPart->isInline()) {
+        // set attachment content to $attachmentsPart
+        $attachmentsPart->setContent(
+            $message->getAttachment($attachmentsPart->getSection()) // or save locally
+        );
+    }
+}
+```
+
+### Text content of message
+
+```php
+/** @var \Sazanof\PhpImapSockets\Models\Message $message **/
+//get text parts (plain,html) with inline images
+$message->getBodyStructure()->getTextParts();
+```
+
+### Flags management
+
+```php
+use \Sazanof\PhpImapSockets\Models\Message;
+
+//$message
+$message->setImportant()->markAsDeleted();
+//or
+$message->addFlags(['one','two'])
+//or
+$message->replaceFlags(['one','two'])
+//or
+$message->clearFlags()
+//or
+$message->deleteFlags('one');
+//trigger save
+$message->saveFlags();
+```
+
 ## Authors
 
 - [@sazanof](https://www.github.com/sazanof)
