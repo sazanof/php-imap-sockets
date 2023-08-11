@@ -2,14 +2,17 @@
 
 # PHP IMAP SOCKETS
 
-NEW library for working with email, using sockets.
+**NEW library for working with email, using sockets.**
 
 ## Features
 
 - Dependency free
 - All flags
-- Bodystructure analize via [BODYSTRUCTURE] command
+- Body structure analyze via [BODYSTRUCTURE] command
 - Flexible search and fetch
+- Attachments support (inline too)
+- Flags management
+- Pagination
 
 ### Todo
 
