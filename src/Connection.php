@@ -12,13 +12,20 @@ use ReflectionException;
 use ReflectionMethod;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
 use Sazanof\PhpImapSockets\Commands\Command;
+use Sazanof\PhpImapSockets\Commands\CreateCommand;
+use Sazanof\PhpImapSockets\Commands\DeleteCommand;
+use Sazanof\PhpImapSockets\Commands\ExamineCommand;
 use Sazanof\PhpImapSockets\Commands\ListCommand;
 use Sazanof\PhpImapSockets\Commands\LoginCommand;
 use Sazanof\PhpImapSockets\Commands\LogoutCommand;
+use Sazanof\PhpImapSockets\Commands\NoopCommand;
+use Sazanof\PhpImapSockets\Commands\RenameCommand;
 use Sazanof\PhpImapSockets\Commands\SelectCommand;
 use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
+use Sazanof\PhpImapSockets\Exceptions\MailboxOperationException;
 use Sazanof\PhpImapSockets\Exceptions\LoginFailedException;
 use Sazanof\PhpImapSockets\Models\Mailbox;
+use Sazanof\PhpImapSockets\Response\ExamineResponse;
 use Sazanof\PhpImapSockets\Response\Response;
 use Sazanof\PhpImapSockets\Response\SelectResponse;
 use Sazanof\PhpImapSockets\Socket;
@@ -355,5 +362,65 @@ class Connection
 	{
 		$response = $this->command(SelectCommand::class, [$mailboxName]);
 		return $response->isOk() ? new SelectResponse($response) : null;
+	}
+
+	/**
+	 * @return bool
+	 * @throws ReflectionException
+	 */
+	public function noop(): bool
+	{
+		return $this->command(NoopCommand::class)->isOk();
+	}
+
+	public function examine(string $path)
+	{
+		return $this->command(ExamineCommand::class, [$path])->asCollection(ExamineResponse::class);
+	}
+
+	/**
+	 * @param string $pathOrName
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function createMailbox(string $pathOrName): bool
+	{
+		$response = $this->command(CreateCommand::class, [$pathOrName]);
+		if ($response->isNotOk()) {
+			throw new MailboxOperationException($response->lastLine());
+		}
+		return $response->isOk();
+	}
+
+	/**
+	 * @param string $pathOrName
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function deleteMailbox(string $pathOrName): bool
+	{
+		$response = $this->command(DeleteCommand::class, [$pathOrName]);
+		if ($response->isNotOk()) {
+			throw new MailboxOperationException($response->lastLine());
+		}
+		return $response->isOk();
+	}
+
+	/**
+	 * @param string $currentName
+	 * @param string $newName
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function renameMailbox(string $currentName, string $newName): bool
+	{
+		$response = $this->command(RenameCommand::class, [$currentName, $newName]);
+		if ($response->isNotOk()) {
+			throw new MailboxOperationException($response->lastLine());
+		}
+		return $response->isOk();
 	}
 }

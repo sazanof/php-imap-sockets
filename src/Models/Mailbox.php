@@ -7,6 +7,7 @@
 
 namespace Sazanof\PhpImapSockets\Models;
 
+use ReflectionException;
 use Sazanof\PhpImapSockets\Collections\BodyStructureCollection;
 use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
@@ -14,6 +15,8 @@ use Sazanof\PhpImapSockets\Commands\ExamineCommand;
 use Sazanof\PhpImapSockets\Commands\FetchCommand;
 use Sazanof\PhpImapSockets\Commands\SearchCommand;
 use Sazanof\PhpImapSockets\Connection;
+use Sazanof\PhpImapSockets\Exceptions\MailboxOperationException;
+use Sazanof\PhpImapSockets\Exceptions\NoResultsException;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
 use Sazanof\PhpImapSockets\Query\SearchQuery;
 use Sazanof\PhpImapSockets\Response\ExamineResponse;
@@ -106,9 +109,7 @@ class Mailbox
 
 	public function examine()
 	{
-		$response = new ExamineResponse(
-			$this->getConnection()->command(ExamineCommand::class, [$this->getOriginalPath()])
-		);
+		$response = $this->getConnection()->examine($this->getOriginalPath());
 		$this->uidvalidity = $response->uidvalidiry;
 		$this->uidnext = $response->uidnext;
 		$this->unseen = $response->unseen;
@@ -124,24 +125,82 @@ class Mailbox
 		return $this;
 	}
 
-	public function search(SearchQuery $query)
+	/**
+	 * @param string $folder
+	 * @param bool $insideCurrent
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function create(string $folder, bool $insideCurrent = false): bool
+	{
+		$name = $insideCurrent ? $this->getPath() . $this->getDelimiter() . $folder : $folder;
+		return $this->getConnection()->createMailbox($name);
+	}
+
+	/**
+	 * @param string $folder
+	 * @param bool $insideCurrent
+	 * @return bool
+	 * @throws ReflectionException
+	 * @throws MailboxOperationException
+	 */
+	public function delete(string $folder, bool $insideCurrent = false): bool
+	{
+		$name = $insideCurrent ? $this->getPath() . $this->getDelimiter() . $folder : $folder;
+		return $this->getConnection()->deleteMailbox($name);
+	}
+
+	/**
+	 * @param string $currentName
+	 * @param string $newName
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function rename(string $currentName, string $newName): bool
+	{
+		return $this->getConnection()->renameMailbox($currentName, $newName);
+	}
+
+	/**
+	 * @param SearchQuery $query
+	 * @return SearchResponse
+	 * @throws ReflectionException
+	 * @throws NoResultsException
+	 */
+	public function search(SearchQuery $query): SearchResponse
 	{
 		return new SearchResponse(
 			$this->connection->command(SearchCommand::class, [$query])
 		);
 	}
 
-	public function fetch(array $nums, FetchQuery $query)
+	/**
+	 * @param array $nums
+	 * @param FetchQuery $query
+	 * @return Response
+	 * @throws ReflectionException
+	 */
+	public function fetch(array $nums, FetchQuery $query): Response
 	{
 		return $this->connection->command(FetchCommand::class, [$nums, $query]);
 	}
 
+	/**
+	 * @param array $nums
+	 * @return BodyStructureCollection
+	 * @throws ReflectionException
+	 */
 	public function getBodyStructure(array $nums): BodyStructureCollection
 	{
 		$query = new FetchQuery();
 		return $this->connection->command(FetchCommand::class, [$nums, $query->bodystructure()])->asCollection(BodyStructureCollection::class);
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function hasChildren()
 	{
 		return !empty(array_intersect(self::SPECIAL_ATTRIBUTES['haschildren'], $this->attributes->toArray()));

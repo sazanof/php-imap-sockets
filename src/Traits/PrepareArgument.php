@@ -15,7 +15,7 @@ trait PrepareArgument
 	 */
 	protected function addQuotes(string $argument): string
 	{
-		if ((str_contains($argument, ' ') && strlen($argument) > 0) || strlen($argument) === 0) {
+		if (str_contains($argument, ' ')) {
 			$argument = '"' . $argument . '"';
 		}
 		return $argument;

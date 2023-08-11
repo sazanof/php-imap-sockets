@@ -18,6 +18,6 @@ class ExamineCommand extends Command
 	public function __construct(string $root)
 	{
 
-		$this->setArguments($this->addQuotes($root));
+		$this->setArguments($root);
 	}
 }
