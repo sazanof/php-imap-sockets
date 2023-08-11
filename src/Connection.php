@@ -18,9 +18,12 @@ use Sazanof\PhpImapSockets\Commands\ExamineCommand;
 use Sazanof\PhpImapSockets\Commands\ListCommand;
 use Sazanof\PhpImapSockets\Commands\LoginCommand;
 use Sazanof\PhpImapSockets\Commands\LogoutCommand;
+use Sazanof\PhpImapSockets\Commands\LsubCommand;
 use Sazanof\PhpImapSockets\Commands\NoopCommand;
 use Sazanof\PhpImapSockets\Commands\RenameCommand;
 use Sazanof\PhpImapSockets\Commands\SelectCommand;
+use Sazanof\PhpImapSockets\Commands\SubscribeCommand;
+use Sazanof\PhpImapSockets\Commands\UnsubscribeCommand;
 use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
 use Sazanof\PhpImapSockets\Exceptions\MailboxOperationException;
 use Sazanof\PhpImapSockets\Exceptions\LoginFailedException;
@@ -323,6 +326,18 @@ class Connection
 	}
 
 	/**
+	 * @param string $root
+	 * @param string $searchQuery
+	 * @return MailboxCollection
+	 * @throws ConnectionException
+	 * @throws ReflectionException
+	 */
+	public function lsubMailboxes(string $root = '', string $searchQuery = '*'): MailboxCollection
+	{
+		return new MailboxCollection($this->command(LsubCommand::class, [$root, $searchQuery]), $this);
+	}
+
+	/**
 	 * @param string $path
 	 * @return Mailbox|null
 	 * @throws ReflectionException
@@ -373,7 +388,12 @@ class Connection
 		return $this->command(NoopCommand::class)->isOk();
 	}
 
-	public function examine(string $path)
+	/**
+	 * @param string $path
+	 * @return ExamineResponse
+	 * @throws ReflectionException
+	 */
+	public function examine(string $path): ExamineResponse
 	{
 		return $this->command(ExamineCommand::class, [$path])->asCollection(ExamineResponse::class);
 	}
@@ -418,6 +438,36 @@ class Connection
 	public function renameMailbox(string $currentName, string $newName): bool
 	{
 		$response = $this->command(RenameCommand::class, [$currentName, $newName]);
+		if ($response->isNotOk()) {
+			throw new MailboxOperationException($response->lastLine());
+		}
+		return $response->isOk();
+	}
+
+	/**
+	 * @param string $name
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function subscribeMailbox(string $name): bool
+	{
+		$response = $this->command(SubscribeCommand::class, [$name]);
+		if ($response->isNotOk()) {
+			throw new MailboxOperationException($response->lastLine());
+		}
+		return $response->isOk();
+	}
+
+	/**
+	 * @param string $name
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function unsubscribeMailbox(string $name): bool
+	{
+		$response = $this->command(UnsubscribeCommand::class, [$name]);
 		if ($response->isNotOk()) {
 			throw new MailboxOperationException($response->lastLine());
 		}

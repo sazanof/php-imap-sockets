@@ -147,7 +147,7 @@ class Mailbox
 	 */
 	public function delete(string $folder, bool $insideCurrent = false): bool
 	{
-		$name = $insideCurrent ? $this->getPath() . $this->getDelimiter() . $folder : $folder;
+		$name = $insideCurrent ? $this->getOriginalPath() . $this->getDelimiter() . $folder : $folder;
 		return $this->getConnection()->deleteMailbox($name);
 	}
 
@@ -161,6 +161,24 @@ class Mailbox
 	public function rename(string $currentName, string $newName): bool
 	{
 		return $this->getConnection()->renameMailbox($currentName, $newName);
+	}
+
+	/**
+	 * @param string|null $name
+	 * @return bool
+	 * @throws MailboxOperationException
+	 * @throws ReflectionException
+	 */
+	public function subscribe(string $name = null): bool
+	{
+		$name = is_null($name) ? $this->getOriginalPath() : $name;
+		return $this->getConnection()->subscribeMailbox($name);
+	}
+
+	public function unsubscribe(string $name = null): bool
+	{
+		$name = is_null($name) ? $this->getOriginalPath() : $name;
+		return $this->getConnection()->unsubscribeMailbox($name);
 	}
 
 	/**
