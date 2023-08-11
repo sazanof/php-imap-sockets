@@ -7,7 +7,6 @@
 ## Features
 
 - Dependency free
-- All flags
 - Body structure analyze via [BODYSTRUCTURE] command
 - Flexible search and fetch
 - Attachments support (inline too)
