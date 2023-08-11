@@ -6,7 +6,7 @@ class Header
 {
 	protected string $key;
 	protected ?string $value;
-	protected string $charset = '';
+	protected ?string $charset = null;
 
 	public function __construct(string $headerLine)
 	{
@@ -37,10 +37,15 @@ class Header
 				}
 			}
 			/////////////////// IN METHOD WHICH DETECT DECODING
-		} elseif (preg_match('/^(.+?): ;?\r\n/', $headerLine, $matches)) {
+		} elseif (preg_match('/^(.+?): \r\n/', $headerLine, $matches)) {
 			// if comes string aka "Subject: \r\n" - no subject
 			$this->key = strtolower($matches[1]);
 			$this->value = null;
+		} else {
+			preg_match('/^(.+?):$/', $headerLine, $matches);
+			$this->key = $matches[1];
+			$this->value = null;
+			$this->charset = null;
 		}
 	}
 
@@ -59,7 +64,7 @@ class Header
 	 */
 	public function getKey(): string
 	{
-		return $this->key;
+		return $this->key ?? '';
 	}
 
 	/**
@@ -68,5 +73,13 @@ class Header
 	public function getValue(): ?string
 	{
 		return $this->value;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getCharset(): ?string
+	{
+		return $this->charset;
 	}
 }

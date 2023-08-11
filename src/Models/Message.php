@@ -8,7 +8,6 @@
 namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\AddressesCollection;
-use Sazanof\PhpImapSockets\Collections\Collection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
 use Sazanof\PhpImapSockets\Response\AttachmentBodyResponse;
@@ -16,6 +15,8 @@ use Sazanof\PhpImapSockets\Response\BodyResponse;
 
 class Message
 {
+	const FLAG_IMPORTANT = '\flagged';
+	const FLAG_DELETED = '\deleted';
 	protected int $uid;
 	protected int $num;
 	protected string $messageId;
@@ -31,6 +32,7 @@ class Message
 	protected string $boundary;
 	protected string $contentType;
 	protected bool $hasAttachments = false;
+	protected bool $isImportant = false;
 	protected array $flags;
 	protected ?string $body = null;
 
@@ -87,8 +89,9 @@ class Message
 	/**
 	 * @param string $section
 	 * @return BodyResponse|string|null
+	 * @throws \ReflectionException
 	 */
-	public function getBody(string $section)
+	public function getBody(string $section): BodyResponse|string|null
 	{
 		if (!is_null($this->mailbox)) {
 			$q = new FetchQuery();
@@ -112,6 +115,21 @@ class Message
 	public function setFlags(array $flags): void
 	{
 		$this->flags = $flags;
+		$this->updateIsImportant();
+	}
+
+	public function markAsDeleted()
+	{
+		$this->addFlags(self::FLAG_DELETED);
+		return $this;
+	}
+
+	/**
+	 * @return void
+	 */
+	public function updateIsImportant(): void
+	{
+		$this->isImportant = in_array(self::FLAG_IMPORTANT, $this->getFlags());
 	}
 
 	/**
@@ -161,6 +179,14 @@ class Message
 	public function getSubject(): string
 	{
 		return $this->subject;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isImportant(): bool
+	{
+		return $this->isImportant;
 	}
 
 	/**
@@ -222,6 +248,66 @@ class Message
 	{
 		return $this->flags;
 	}
+
+	public function addFlags(string|array $flag)
+	{
+		if (is_array($flag)) {
+			$this->flags = array_merge($this->flags, $flag);
+		} else {
+			if (!in_array($flag, $this->getFlags())) {
+				$this->flags[] = $flag;
+			}
+		}
+		return $this;
+	}
+
+	public function deleteFlags(string|array $flag)
+	{
+		if (is_string($flag)) {
+			$flag = [$flag];
+		}
+		$this->flags = array_diff($this->flags, $flag);
+		return $this;
+	}
+
+	public function clearFlags()
+	{
+		$this->flags = [];
+		return $this;
+	}
+
+	public function replaceFlags(string|array $flag)
+	{
+		if (is_string($flag)) {
+			$flag = [$flag];
+		}
+		$this->flags = $flag;
+		return $this;
+	}
+
+	public function saveFlags()
+	{
+		return $this->getMailbox()->store([$this->getNum()], $this->getFlags(), false, true);
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function setImportant()
+	{
+		$this->isImportant = true;
+		return $this->addFlags(self::FLAG_IMPORTANT);
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function unsetImportant()
+	{
+		$this->isImportant = false;
+		return $this->deleteFlags(self::FLAG_IMPORTANT);
+	}
+
 
 	/**
 	 * @return string

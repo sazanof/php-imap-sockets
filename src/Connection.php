@@ -11,10 +11,13 @@ use Exception;
 use ReflectionException;
 use ReflectionMethod;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
+use Sazanof\PhpImapSockets\Commands\CheckCommand;
+use Sazanof\PhpImapSockets\Commands\CloseCommand;
 use Sazanof\PhpImapSockets\Commands\Command;
 use Sazanof\PhpImapSockets\Commands\CreateCommand;
 use Sazanof\PhpImapSockets\Commands\DeleteCommand;
 use Sazanof\PhpImapSockets\Commands\ExamineCommand;
+use Sazanof\PhpImapSockets\Commands\ExpungeCommand;
 use Sazanof\PhpImapSockets\Commands\ListCommand;
 use Sazanof\PhpImapSockets\Commands\LoginCommand;
 use Sazanof\PhpImapSockets\Commands\LogoutCommand;
@@ -22,6 +25,7 @@ use Sazanof\PhpImapSockets\Commands\LsubCommand;
 use Sazanof\PhpImapSockets\Commands\NoopCommand;
 use Sazanof\PhpImapSockets\Commands\RenameCommand;
 use Sazanof\PhpImapSockets\Commands\SelectCommand;
+use Sazanof\PhpImapSockets\Commands\StoreCommand;
 use Sazanof\PhpImapSockets\Commands\SubscribeCommand;
 use Sazanof\PhpImapSockets\Commands\UnsubscribeCommand;
 use Sazanof\PhpImapSockets\Exceptions\ConnectionException;
@@ -459,6 +463,31 @@ class Connection
 		return $response->isOk();
 	}
 
+	public function checkMailbox()
+	{
+		return $this->command(CheckCommand::class)->isOk();
+	}
+
+	/**
+	 * Delete messages with \Deleted flags and reset state to auth complete
+	 * @return bool
+	 * @throws ReflectionException
+	 */
+	public function closeMailbox(): bool
+	{
+		return $this->command(CloseCommand::class)->isOk();
+	}
+
+	/**
+	 * Delete messages with \Deleted flags and reset state to auth complete. Changed imap msg mnums
+	 * @return bool
+	 * @throws ReflectionException
+	 */
+	public function expungeMailbox(): bool
+	{
+		return $this->command(ExpungeCommand::class)->isOk();
+	}
+
 	/**
 	 * @param string $name
 	 * @return bool
@@ -472,5 +501,19 @@ class Connection
 			throw new MailboxOperationException($response->lastLine());
 		}
 		return $response->isOk();
+	}
+
+	/**
+	 * Update flags on messages
+	 * @param array $msgNums
+	 * @param array $flags
+	 * @param bool $append
+	 * @param bool $silent
+	 * @return Response
+	 * @throws ReflectionException
+	 */
+	public function store(array $msgNums, array $flags, bool $append = false, bool $silent = false): Response
+	{
+		return $this->command(StoreCommand::class, [$msgNums, $flags, $append, $silent]);
 	}
 }

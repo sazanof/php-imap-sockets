@@ -182,6 +182,37 @@ class Mailbox
 	}
 
 	/**
+	 * @return bool
+	 * @throws ReflectionException
+	 */
+	public function close(): bool
+	{
+		return $this->getConnection()->closeMailbox();
+	}
+
+	/**
+	 * @return bool
+	 * @throws ReflectionException
+	 */
+	public function expunge(): bool
+	{
+		return $this->getConnection()->expungeMailbox();
+	}
+
+	/**
+	 * @param array $msgNums
+	 * @param array $flags
+	 * @param bool $append
+	 * @param bool $silent
+	 * @return Response
+	 * @throws ReflectionException
+	 */
+	public function store(array $msgNums, array $flags, bool $append = false, bool $silent = false): Response
+	{
+		return $this->getConnection()->store($msgNums, $flags, $append, $silent);
+	}
+
+	/**
 	 * @param SearchQuery $query
 	 * @return SearchResponse
 	 * @throws ReflectionException
