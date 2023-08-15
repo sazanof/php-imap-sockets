@@ -131,10 +131,10 @@ class Message
 
 	/**
 	 * @param TextPart $part
-	 * @return BodyResponse|string|null
+	 * @return false|string|null
 	 * @throws \ReflectionException
 	 */
-	public function getBody(TextPart $part): BodyResponse|string|null
+	public function getBody(TextPart $part): bool|string|null
 	{
 		if (!is_null($this->mailbox)) {
 			$q = new FetchQuery();
@@ -149,6 +149,50 @@ class Message
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @return bool|string|null
+	 * @throws \ReflectionException
+	 */
+	public function getHtmlText(): bool|string|null
+	{
+		foreach ($this->getBodyStructure()->getTextParts() as $textPart) {
+			if ($textPart->getMimeType() === 'text/html') {
+				return $this->getBody($textPart);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param int|null $length
+	 * @return bool|string|null
+	 * @throws \ReflectionException
+	 */
+	public function getPlainText(int $length = null)
+	{
+		foreach ($this->getBodyStructure()->getTextParts() as $textPart) {
+			if ($textPart->getMimeType() === 'text/plain') {
+				return $length > 0 ? $this->trimText($this->getBody($textPart)) : $this->getBody($textPart);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param string $text
+	 * @param int $length
+	 * @return string
+	 */
+	protected function trimText(string $text, int $length = 140)
+	{
+		$text = str_replace('\r\n', ' ', $text);
+		if (strlen($text) > $length) {
+			$offset = ($length - 3) - strlen($text);
+			return substr($text, 0, strrpos($text, ' ', $offset)) . '...';
+		}
+		return $text;
 	}
 
 	/**
