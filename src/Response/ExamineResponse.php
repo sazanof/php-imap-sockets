@@ -19,19 +19,19 @@ class ExamineResponse
 	{
 		if ($response->isOk() && count($response->lines()) > 0) {
 			foreach ($response->lines() as $line) {
-				if (preg_match('/\* (\d+) EXISTS/', '* 7 EXISTS', $exists) > 0) {
+				if (preg_match('/\* (\d+) EXISTS/', $line, $exists) > 0) {
 					$this->exists = (int)$exists[1];
 				}
-				if (preg_match('/\* (\d+) RECENT/', '* 123 RECENT', $recent) > 0) {
+				if (preg_match('/\* (\d+) RECENT/', $line, $recent) > 0) {
 					$this->recent = (int)$recent[1];
 				}
-				if (preg_match('[UNSEEN (\d*)]', 'OK [UNSEEN 388]', $unseen) > 0) {
+				if (preg_match('[UNSEEN (\d*)]', $line, $unseen) > 0) {
 					$this->unseen = (int)$unseen[1];
 				}
-				if (preg_match('[UIDNEXT (\d*)]', 'OK [UIDNEXT 1532]', $uidnext) > 0) {
+				if (preg_match('[UIDNEXT (\d*)]', $line, $uidnext) > 0) {
 					$this->uidnext = (int)$uidnext[1];
 				}
-				if (preg_match('[UIDVALIDITY (\d*)]', 'OK [UIDVALIDITY 1684517022]', $uidvalidity) > 0) {
+				if (preg_match('[UIDVALIDITY (\d*)]', $line, $uidvalidity) > 0) {
 					$this->uidvalidiry = (int)$uidvalidity[1];
 				}
 			}
