@@ -21,9 +21,9 @@ class Message
 	protected int $num;
 	protected string $messageId;
 	protected Address $from;
-	protected AddressesCollection $to;
-	protected AddressesCollection $cc;
-	protected AddressesCollection $bcc;
+	protected ?AddressesCollection $to = null;
+	protected ?AddressesCollection $cc = null;
+	protected ?AddressesCollection $bcc = null;
 	protected ?string $subject;
 	protected \DateTime $date;
 	protected MessageHeadersCollection $headers;
@@ -274,17 +274,17 @@ class Message
 	}
 
 	/**
-	 * @return AddressesCollection
+	 * @return ?AddressesCollection
 	 */
-	public function getBcc(): AddressesCollection
+	public function getBcc(): ?AddressesCollection
 	{
 		return $this->bcc;
 	}
 
 	/**
-	 * @return AddressesCollection
+	 * @return ?AddressesCollection
 	 */
-	public function getCc(): AddressesCollection
+	public function getCc(): ?AddressesCollection
 	{
 		return $this->cc;
 	}
