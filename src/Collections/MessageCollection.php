@@ -70,6 +70,8 @@ class MessageCollection extends Collection
 		'Date',
 		'Message-ID',
 		'Reply-To',
+		'References',
+		'In-Reply-To',
 		'Return-Path',
 		'Subject',
 		'Content-Type'

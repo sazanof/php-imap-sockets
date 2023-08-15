@@ -35,6 +35,8 @@ class Message
 	protected bool $isImportant = false;
 	protected array $flags;
 	protected ?string $body = null;
+	protected ?string $references = null;
+	protected ?string $inReplyTo = null;
 
 	public function __construct()
 	{
@@ -67,6 +69,13 @@ class Message
 			$this->getHeaders()->getHeader('to')->getValue()
 		);
 
+		$this->setReferences(
+			$this->getHeaders()->getHeader('references') ? $this->getHeaders()->getHeader('references')->getValue() : null
+		);
+
+		$this->setInReplyTo(
+			$this->getHeaders()->getHeader('in-reply-to') ? $this->getHeaders()->getHeader('in-reply-to')->getValue() : null
+		);
 		$contentType = $this->getHeaders()->getHeader('content-type')->getValue();
 		if (preg_match('/^(.*?)\/(.*?);boundary="(.*?)"$/', $contentType, $matches)) {
 			$this->setBoundary($matches[3]);
@@ -77,6 +86,39 @@ class Message
 		$this->setContentType($ct);
 
 	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getReferences(): ?string
+	{
+		return $this->references;
+	}
+
+	/**
+	 * @param string|null $references
+	 */
+	public function setReferences(?string $references): void
+	{
+		$this->references = $references;
+	}
+
+	/**
+	 * @param string|null $inReplyTo
+	 */
+	public function setInReplyTo(?string $inReplyTo): void
+	{
+		$this->inReplyTo = $inReplyTo;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getInReplyTo(): ?string
+	{
+		return $this->inReplyTo;
+	}
+
 
 	/**
 	 * @param Mailbox $mailbox

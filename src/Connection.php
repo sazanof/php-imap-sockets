@@ -11,6 +11,8 @@ use Exception;
 use ReflectionException;
 use ReflectionMethod;
 use Sazanof\PhpImapSockets\Collections\MailboxCollection;
+use Sazanof\PhpImapSockets\Commands\AuthenticateCommand;
+use Sazanof\PhpImapSockets\Commands\CapabilityCommand;
 use Sazanof\PhpImapSockets\Commands\CheckCommand;
 use Sazanof\PhpImapSockets\Commands\CloseCommand;
 use Sazanof\PhpImapSockets\Commands\Command;
@@ -304,6 +306,19 @@ class Connection
 
 		return $this;
 	}
+
+	public function capability()
+	{
+		return $this->command(CapabilityCommand::class);
+	}
+
+	public function authenticate(string $user, string $token): Response
+	{
+
+		return $this->command(AuthenticateCommand::class, [$user, $token]);
+
+	}
+
 
 	/**
 	 * Logout and close the connection.

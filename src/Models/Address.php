@@ -30,7 +30,7 @@ class Address
 			$_address = $addresses[0]->host !== self::NONE_EXISTENT ? $addresses[0] : null; // TODo throw Exception better???
 			$address->setHost($_address->host);
 			$address->setUser($_address->mailbox);
-			$address->setName($_address->personal);
+			$address->setName($_address->personal ?? null);
 			$address->setEmail($address->getUser() . '@' . $address->getHost());
 			$address->toRfc822String();
 		}
