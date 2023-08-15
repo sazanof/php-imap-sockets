@@ -55,7 +55,7 @@ class Message
 			$this->getHeaders()->getHeader('message-id')->getValue()
 		);
 		$this->setSubject(
-			$this->getHeaders()->getHeader('subject')->getValue()
+			!is_null($this->getHeaders()->getHeader('subject')) ? $this->getHeaders()->getHeader('subject')->getValue() : null
 		);
 		$this->setDate(
 			new \DateTime(

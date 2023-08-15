@@ -42,7 +42,6 @@ class HeadersCollection extends Collection
 				foreach ($headersArray as $header) {
 					$this->headers[$msgNum][] = new Header($header);
 				}
-
 			}
 		}
 	}
