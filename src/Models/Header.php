@@ -21,14 +21,14 @@ class Header
 					);
 				} elseif (preg_match('/(^|)=\?.*?\?B|b\?/', $matches[2], $_m)) {
 					$this->charset = $this->clearCharset($_m[0]);
-					$this->value = iconv_mime_decode($matches[2], 0, "UTF-8");
+					$this->value = $this->imapMimeHeaderDecode($matches[2]);
 				} else {
 					$this->value = imap_utf8($matches[2]);
 				}
 			} else {
 				if (preg_match('/(^|)=\?.*?\?.\?/', $matches[2], $out)) {
 					$this->charset = $this->clearCharset($out[0]);
-					$this->value = iconv_mime_decode($matches[2], 0, "UTF-8");
+					$this->value = $this->imapMimeHeaderDecode($matches[2]);
 				} else {
 					// strings without charset
 					$this->charset = mb_detect_encoding($matches[2]);
@@ -47,6 +47,16 @@ class Header
 			$this->value = null;
 			$this->charset = null;
 		}
+	}
+
+	public function imapMimeHeaderDecode(string $header)
+	{
+		$header = imap_mime_header_decode($header);
+		$split = '';
+		foreach ($header as $h) {
+			$split .= $h->text;
+		}
+		return $split;
 	}
 
 	public function clearCharset(string $text)
