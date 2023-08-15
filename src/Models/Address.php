@@ -114,7 +114,7 @@ class Address
 	public function toRfc822String()
 	{
 		$this->setRfc822String(imap_rfc822_write_address(
-			mailbox: $this->getUser(), hostname: $this->getHost(), personal: $this->getName()
+			mailbox: $this->getUser(), hostname: $this->getHost(), personal: $this->getName() ?? ''
 		));
 	}
 
