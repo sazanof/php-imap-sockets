@@ -102,7 +102,7 @@ class Mailbox
 		$path = rtrim($path, '"');
 		$path = ltrim($path, '"');
 		$this->setPath($path);
-		$this->setOriginalPath($matches[3]);
+		$this->setOriginalPath(trim($matches[3], '"'));
 		$pathArray = explode($this->getDelimiter(), $this->getPath());
 		$this->setName(!empty($pathArray) ? end($pathArray) : $this->getPath());
 	}
