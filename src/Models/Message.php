@@ -20,7 +20,7 @@ class Message
 	protected int $uid;
 	protected int $num;
 	protected string $messageId;
-	protected string|Address $from;
+	protected Address $from;
 	protected AddressesCollection $to;
 	protected AddressesCollection $cc;
 	protected AddressesCollection $bcc;
@@ -358,9 +358,9 @@ class Message
 
 
 	/**
-	 * @return string
+	 * @return Address
 	 */
-	public function getFrom(): string
+	public function getFrom(): Address
 	{
 		return $this->from;
 	}
