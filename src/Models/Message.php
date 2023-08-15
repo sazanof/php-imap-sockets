@@ -21,9 +21,9 @@ class Message
 	protected int $num;
 	protected string $messageId;
 	protected string|Address $from;
-	protected string|AddressesCollection $to;
-	protected string|AddressesCollection $cc;
-	protected string|AddressesCollection $bcc;
+	protected AddressesCollection $to;
+	protected AddressesCollection $cc;
+	protected AddressesCollection $bcc;
 	protected ?string $subject;
 	protected \DateTime $date;
 	protected MessageHeadersCollection $headers;
@@ -252,33 +252,39 @@ class Message
 	}
 
 	/**
-	 * @param AddressesCollection|string $bcc
+	 * @param string|AddressesCollection $bcc
 	 */
-	public function setBcc(AddressesCollection|string $bcc): void
+	public function setBcc(string|AddressesCollection $bcc): void
 	{
+		if (is_string($bcc)) {
+			$bcc = new AddressesCollection($bcc);
+		}
 		$this->bcc = $bcc;
 	}
 
 	/**
-	 * @param AddressesCollection|string $cc
+	 * @param string|AddressesCollection $cc
 	 */
-	public function setCc(AddressesCollection|string $cc): void
+	public function setCc(string|AddressesCollection $cc): void
 	{
+		if (is_string($cc)) {
+			$cc = new AddressesCollection($cc);
+		}
 		$this->cc = $cc;
 	}
 
 	/**
-	 * @return AddressesCollection|string
+	 * @return AddressesCollection
 	 */
-	public function getBcc(): AddressesCollection|string
+	public function getBcc(): AddressesCollection
 	{
 		return $this->bcc;
 	}
 
 	/**
-	 * @return AddressesCollection|string
+	 * @return AddressesCollection
 	 */
-	public function getCc(): AddressesCollection|string
+	public function getCc(): AddressesCollection
 	{
 		return $this->cc;
 	}
@@ -459,9 +465,9 @@ class Message
 	}
 
 	/**
-	 * @return string
+	 * @return AddressesCollection
 	 */
-	public function getTo(): string
+	public function getTo(): AddressesCollection
 	{
 		return $this->to;
 	}
