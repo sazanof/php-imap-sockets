@@ -187,7 +187,7 @@ class Message
 	 */
 	protected function trimText(string $text, int $length = 140)
 	{
-		$text = str_replace('\r\n', ' ', $text);
+		$text = str_replace(['\r\n', '\r', '\n'], ' ', $text);
 		if (strlen($text) > $length) {
 			$offset = ($length - 3) - strlen($text);
 			return substr($text, 0, strrpos($text, ' ', $offset)) . '...';
