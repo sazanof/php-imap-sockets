@@ -143,7 +143,7 @@ class Message
 			if ($part->getEncoding() === 'quoted-printable') {
 				return imap_qprint($body);
 			} elseif ($part->getEncoding() === 'base64') {
-				return base64_decode($body);
+				return imap_base64($body);
 			} else {
 				return $body;
 			}
