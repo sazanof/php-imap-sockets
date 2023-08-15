@@ -9,6 +9,7 @@ namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\AddressesCollection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
+use Sazanof\PhpImapSockets\Parts\TextPart;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
 use Sazanof\PhpImapSockets\Response\AttachmentBodyResponse;
 use Sazanof\PhpImapSockets\Response\BodyResponse;
@@ -129,15 +130,23 @@ class Message
 	}
 
 	/**
-	 * @param string $section
+	 * @param TextPart $part
 	 * @return BodyResponse|string|null
 	 * @throws \ReflectionException
 	 */
-	public function getBody(string $section): BodyResponse|string|null
+	public function getBody(TextPart $part): BodyResponse|string|null
 	{
 		if (!is_null($this->mailbox)) {
 			$q = new FetchQuery();
-			return $this->mailbox->fetch([$this->num], $q->body($section))->asCollection(BodyResponse::class);
+			$body = $this->mailbox->fetch([$this->num], $q->body($part->getSection()))->asCollection(BodyResponse::class);
+			$body = $body->getContent();
+			if ($part->getEncoding() === 'quoted-printable') {
+				return imap_qprint($body);
+			} elseif ($part->getEncoding() === 'base64') {
+				return base64_decode($body);
+			} else {
+				return $body;
+			}
 		}
 		return null;
 	}

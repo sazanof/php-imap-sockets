@@ -11,7 +11,7 @@ class BodyResponse
 		if ($response->isOk()) {
 			foreach ($response->lines() as $line) {
 				if ($line !== ")\r\n" && $line !== $response->lastLine() && $line !== $response->line(0)) {
-					$this->content .= $line;
+					$this->content .= trim($line, ' ');
 				}
 			}
 		}
