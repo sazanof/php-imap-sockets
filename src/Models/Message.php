@@ -9,6 +9,7 @@ namespace Sazanof\PhpImapSockets\Models;
 
 use Sazanof\PhpImapSockets\Collections\AddressesCollection;
 use Sazanof\PhpImapSockets\Collections\MessageHeadersCollection;
+use Sazanof\PhpImapSockets\Parts\AttachmentPart;
 use Sazanof\PhpImapSockets\Parts\TextPart;
 use Sazanof\PhpImapSockets\Query\FetchQuery;
 use Sazanof\PhpImapSockets\Response\AttachmentBodyResponse;
@@ -152,6 +153,22 @@ class Message
 	}
 
 	/**
+	 * @param AttachmentPart $part
+	 * @return string
+	 * @throws \ReflectionException
+	 */
+	public function getInlineImage(AttachmentPart $part)
+	{
+		if (!is_null($this->mailbox)) {
+			$q = new FetchQuery();
+			$body = $this->mailbox->fetch([$this->num], $q->body($part->getSection()))->asCollection(BodyResponse::class);
+			$body = $body->getContent();
+			return 'data:' . $part->getMimeType() . ';' . $part->getEncoding() . ',' . str_replace(["\r\n", "\r", "\n"], '', $body);
+		}
+		return '';
+	}
+
+	/**
 	 * @return bool|string|null
 	 * @throws \ReflectionException
 	 */
@@ -159,10 +176,52 @@ class Message
 	{
 		foreach ($this->getBodyStructure()->getTextParts() as $textPart) {
 			if ($textPart->getMimeType() === 'text/html') {
-				return $this->getBody($textPart);
+				$body = $this->getBody($textPart);
+				$contentIds = $this->findContentIds($body);
+				if (!empty($contentIds)) {
+					// html part contains inline images
+					foreach ($contentIds as $cid) {
+						$inlinePart = $this->getPartByContentId($cid);
+						$inlineContent = $this->getInlineImage($inlinePart);
+						$body = str_replace("cid:$cid", $inlineContent, $body);
+					}
+				}
+				return $body;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @param string $cid
+	 * @param MultiPart|null $_part
+	 * @return AttachmentPart|null
+	 */
+	public function getPartByContentId(string $cid, MultiPart $_part = null)
+	{
+		$parts = is_null($_part) ? $this->getBodyStructure()->getParts() : $_part->getParts();
+		/** @var AttachmentPart $part */
+		foreach ($parts->items() as $part) {
+			if ($part instanceof AttachmentPart) {
+				if (strtolower($part->getDisposition()) === 'inline' && $part->getContentId() === "<$cid>") {
+					return $part;
+				}
+			} elseif ($part instanceof MultiPart) {
+				return $this->getPartByContentId($cid, $part);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param string $html
+	 * @return mixed|void
+	 */
+	protected function findContentIds(string $html)
+	{
+		if (preg_match_all('/src="cid:(.*?)"/', $html, $matches)) {
+			return $matches[1];
+		}
 	}
 
 	/**

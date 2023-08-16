@@ -144,7 +144,6 @@ class BodyStructure
 									$parentMultipart->setAttachmentsExists(true);
 								}
 							}
-
 							$parentMultipart->getParts()->add($attachment);
 							$section[array_key_last($section)]++;
 							$level = implode('.', $section);
