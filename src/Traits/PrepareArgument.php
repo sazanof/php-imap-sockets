@@ -15,7 +15,7 @@ trait PrepareArgument
 	 */
 	protected function addQuotes(string $argument): string
 	{
-		if (str_contains($argument, ' ')) {
+		if (str_contains($argument, ' ') || str_contains($argument, '-')) {
 			$argument = '"' . $argument . '"';
 		}
 		return $argument;
