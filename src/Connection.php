@@ -363,7 +363,7 @@ class Connection
 	 */
 	public function getMailboxByPath(string $path)
 	{
-		return $this->listMailboxes($path, '%')->first();
+		return $this->listMailboxes($path, '"' . imap_utf8($path) . '"')->first();
 	}
 
 	/**
