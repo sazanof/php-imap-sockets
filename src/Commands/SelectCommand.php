@@ -17,6 +17,6 @@ class SelectCommand extends Command
 
 	public function __construct(string $folder)
 	{
-		$this->setArguments($folder);
+		$this->setArguments($this->addQuotes($folder));
 	}
 }
