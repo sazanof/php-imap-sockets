@@ -358,23 +358,15 @@ class Connection
 
 	/**
 	 * @param string $path
-	 * @param string $search
-	 * @return mixed|null
+	 * @return mixed
 	 * @throws ConnectionException
 	 * @throws ReflectionException
 	 */
-	public function getMailboxByPath(string $path, string $delimiter = null)
+	public function getMailboxByPath(string $path)
 	{
-		if (!is_null($delimiter)) {
-			$ex = explode($delimiter, $path);
-			if (count($ex) > 1) {
-				$last = end($ex);
-				unset($ex[array_key_last($ex)]);
-				return $this->listMailboxes(implode($delimiter, $ex), '*/' . imap_mutf7_to_utf8($last) . '%')->first();
-			}
-
-		}
-		return $this->listMailboxes($path, '%')->first();
+		return $this->listMailboxes('', '*')->find(function (Mailbox $mailbox) use ($path) {
+			return $mailbox->getOriginalPath() === $path;
+		})[0];
 		// todo explode path by dilimiter and pass last arg to searchquery
 
 	}
