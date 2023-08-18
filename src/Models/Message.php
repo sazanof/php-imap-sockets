@@ -174,6 +174,7 @@ class Message
 	 */
 	public function getHtmlText(): bool|string|null
 	{
+		if (is_null($this->getBodyStructure())) return null;
 		foreach ($this->getBodyStructure()->getTextParts() as $textPart) {
 			if ($textPart->getMimeType() === 'text/html') {
 				$body = $this->getBody($textPart);
@@ -199,6 +200,7 @@ class Message
 	 */
 	public function getPartByContentId(string $cid, MultiPart $_part = null)
 	{
+		if (is_null($this->getBodyStructure())) return null;
 		$parts = is_null($_part) ? $this->getBodyStructure()->getParts() : $_part->getParts();
 		/** @var AttachmentPart $part */
 		foreach ($parts->items() as $part) {
