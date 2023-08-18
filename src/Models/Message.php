@@ -233,6 +233,7 @@ class Message
 	 */
 	public function getPlainText(int $length = null)
 	{
+		if (is_null($this->getBodyStructure())) return null;
 		foreach ($this->getBodyStructure()->getTextParts() as $textPart) {
 			if ($textPart->getMimeType() === 'text/plain') {
 				return $length > 0 ? $this->trimText($this->getBody($textPart)) : $this->getBody($textPart);
