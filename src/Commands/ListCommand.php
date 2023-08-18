@@ -26,6 +26,6 @@ class ListCommand extends Command
 		if (str_contains($this->root, ' ') || str_contains($this->root, '-') || strlen($this->root) === 0) {
 			$this->root = '"' . $this->root . '"';
 		}
-		$this->setArguments($this->root . ' ' . $this->addQuotes($this->search));
+		$this->setArguments($this->root . ' ' . $this->search);
 	}
 }

@@ -370,7 +370,7 @@ class Connection
 			if (count($ex) > 1) {
 				$last = end($ex);
 				unset($ex[array_key_last($ex)]);
-				return $this->listMailboxes(implode($delimiter, $ex), imap_utf8($last))->first();
+				return $this->listMailboxes(implode($delimiter, $ex), '*/' . imap_mutf7_to_utf8($last) . '%')->first();
 			}
 
 		}
