@@ -363,10 +363,20 @@ class Connection
 	 * @throws ConnectionException
 	 * @throws ReflectionException
 	 */
-	public function getMailboxByPath(string $path, string $search = '%')
+	public function getMailboxByPath(string $path, string $delimiter = null)
 	{
+		if (!is_null($delimiter)) {
+			$ex = explode($delimiter, $path);
+			if (count($ex) > 1) {
+				$last = end($ex);
+				unset($ex[array_key_last($ex)]);
+				return $this->listMailboxes(implode($delimiter, $ex), imap_utf8($last))->first();
+			}
+
+		}
+		return $this->listMailboxes($path, '%')->first();
 		// todo explode path by dilimiter and pass last arg to searchquery
-		return $this->listMailboxes($path, $search)->first();
+
 	}
 
 	/**
