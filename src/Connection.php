@@ -358,12 +358,15 @@ class Connection
 
 	/**
 	 * @param string $path
-	 * @return Mailbox|null
+	 * @param string $search
+	 * @return mixed|null
+	 * @throws ConnectionException
 	 * @throws ReflectionException
 	 */
-	public function getMailboxByPath(string $path)
+	public function getMailboxByPath(string $path, string $search = '%')
 	{
-		return $this->listMailboxes($path, '"' . imap_utf8($path) . '"')->first();
+		// todo explode path by dilimiter and pass last arg to searchquery
+		return $this->listMailboxes($path, $search)->first();
 	}
 
 	/**
