@@ -10,8 +10,8 @@ class Header
 
 	public function __construct(string $headerLine)
 	{
-		if (preg_match('/^(.*?): (.+?)$/', $headerLine, $matches)) {
-			$this->key = strtolower($matches[1]);
+		if (preg_match('/^(.*?):(.+?)$/', $headerLine, $matches)) {
+			$this->key = strtolower(ltrim($matches[1]));
 			////////// TODO WRAP THIS SEPARATE
 			if ($this->isUtf8($matches[2])) {
 				if (preg_match('/(^|)=\?.*?\?Q|q\?/', $matches[2], $_m)) {
@@ -43,6 +43,9 @@ class Header
 			$this->value = null;
 		} else {
 			preg_match('/^(.+?):$/', $headerLine, $matches);
+			if (is_null($matches[1])) {
+				dd($headerLine);
+			}
 			$this->key = $matches[1];
 			$this->value = null;
 			$this->charset = null;
