@@ -16,8 +16,9 @@ class Header
 			if ($this->isUtf8($matches[2])) {
 				if (preg_match('/(^|)=\?.*?\?Q|q\?/', $matches[2], $_m)) {
 					$this->charset = $this->clearCharset($_m[0]);
+					$this->value = str_replace('_', ' ', $matches[2]);
 					$this->value = quoted_printable_decode(
-						preg_replace('/(^|)=\?.*?\?.\?|\?=/', '', $matches[2])
+						preg_replace('/(^|)=\?.*?\?.\?|\?=/', '', $this->value)
 					);
 				} elseif (preg_match('/(^|)=\?.*?\?B|b\?/', $matches[2], $_m)) {
 					$this->charset = $this->clearCharset($_m[0]);
