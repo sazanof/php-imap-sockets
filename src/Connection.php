@@ -37,6 +37,7 @@ use Sazanof\PhpImapSockets\Models\Mailbox;
 use Sazanof\PhpImapSockets\Response\ExamineResponse;
 use Sazanof\PhpImapSockets\Response\Response;
 use Sazanof\PhpImapSockets\Response\SelectResponse;
+use Sazanof\PhpImapSockets\Response\SingleMailboxResponse;
 use Sazanof\PhpImapSockets\Socket;
 
 /**
@@ -358,15 +359,16 @@ class Connection
 
 	/**
 	 * @param string $path
-	 * @return mixed
-	 * @throws ConnectionException
+	 * @return Mailbox
 	 * @throws ReflectionException
 	 */
-	public function getMailboxByPath(string $path)
+	public function getMailboxByPath(string $path): Mailbox
 	{
-		return $this->listMailboxes('', '*')->find(function (Mailbox $mailbox) use ($path) {
-			return $mailbox->getOriginalPath() === $path;
-		})[0];
+		/** @var Mailbox $mailbox */
+		$mailbox = $this->command(ListCommand::class, ['', '*'])->asNewInstance(SingleMailboxResponse::class, [$path])->getMailbox();
+		$mailbox->setConnection($this);
+		$mailbox->examine();
+		return $mailbox;
 		// todo explode path by dilimiter and pass last arg to searchquery
 
 	}

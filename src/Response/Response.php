@@ -122,6 +122,13 @@ class Response
 		return $class->newInstance($this->line(0));
 	}
 
+	public function asNewInstance($className, array $args)
+	{
+		$class = new \ReflectionClass($className);
+		$args[] = $this;
+		return $class->newInstance(...$args);
+	}
+
 	public function asCollection(string $collectionClassName)
 	{
 		$class = new \ReflectionClass($collectionClassName);
