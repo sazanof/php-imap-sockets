@@ -11,7 +11,8 @@ class SingleMailboxResponse
 	public function __construct(string $path, Response $response)
 	{
 		foreach ($response->lines() as $line) {
-			if (preg_match('/\* LIST \((.*?)\) (.*?) (.*?)$/', $line, $matches)) {
+			if (preg_match('/\* LIST \((.*?)\) (.*?) "?(.*?)"?$/', $line, $matches)) {
+				dump(trim($matches[3]));
 				if (trim($matches[3]) === $path) {
 					$this->mailbox = new Mailbox($line);
 				}
