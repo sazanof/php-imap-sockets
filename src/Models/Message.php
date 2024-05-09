@@ -66,12 +66,17 @@ class Message
 				)
 			);
 		} catch (\Exception $exception) {
-			$date = preg_replace('\\(.*\\)', '', $this->getHeaders()->getHeader('date')->getValue());
-			if (!is_null($date)) {
-				$this->setDate(
-					new \DateTime($date)
-				);
+			try {
+				$date = preg_replace('\\(.*\\)', '', $this->getHeaders()->getHeader('date')->getValue());
+				if (is_string($date)) {
+					$this->setDate(
+						new \DateTime($date)
+					);
+				}
+			} catch (\Exception $e) {
+				dd($e);
 			}
+
 		}
 
 		$this->setFrom(
