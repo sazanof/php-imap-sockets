@@ -27,7 +27,7 @@ class HeadersCollection extends Collection
 				}
 				if ($line !== $response->lastLine() && $line !== "\r\n" && $line !== ")\r\n") {
 
-					if (preg_match('/^(.*?): (.*?)\r\n/', $line, $matches)) {
+					if (preg_match('/^(.*?):(.*?)\r\n/', $line, $matches)) {
 						$lines[$num][$i] = trim($line);
 						$lastIndex = $i;
 					} else {
