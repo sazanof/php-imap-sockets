@@ -69,6 +69,8 @@ class MessageCollection extends Collection
 		'Bcc',
 		'Date',
 		'Message-ID',
+		'Resent-Message-Id',
+		'Messageid',
 		'Reply-To',
 		'References',
 		'In-Reply-To',
