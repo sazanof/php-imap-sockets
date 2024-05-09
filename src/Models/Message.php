@@ -27,7 +27,7 @@ class Message
 	protected ?AddressesCollection $cc = null;
 	protected ?AddressesCollection $bcc = null;
 	protected ?string $subject;
-	protected \DateTime $date;
+	protected ?\DateTime $date = null;
 	protected MessageHeadersCollection $headers;
 	protected ?MultiPart $bodyStructure;
 	protected ?Mailbox $mailbox = null;
