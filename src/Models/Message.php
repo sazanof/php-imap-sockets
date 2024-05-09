@@ -21,7 +21,7 @@ class Message
 	const FLAG_DELETED = '\deleted';
 	protected int $uid;
 	protected int $num;
-	protected string $messageId;
+	protected ?string $messageId;
 	protected Address $from;
 	protected ?AddressesCollection $to = null;
 	protected ?AddressesCollection $cc = null;
@@ -62,7 +62,7 @@ class Message
 		try {
 			$this->setDate(
 				new \DateTime(
-					$this->getHeaders()->getHeader('date')->getValue()
+					$this->getHeaders()->getHeader('date')?->getValue()
 				)
 			);
 		} catch (\Exception $exception) {
@@ -311,9 +311,9 @@ class Message
 	}
 
 	/**
-	 * @param string $messageId
+	 * @param ?string $messageId
 	 */
-	public function setMessageId(string $messageId): void
+	public function setMessageId(?string $messageId): void
 	{
 		$this->messageId = $messageId;
 	}
@@ -344,9 +344,9 @@ class Message
 
 
 	/**
-	 * @return string
+	 * @return ?string
 	 */
-	public function getSubject(): string
+	public function getSubject(): ?string
 	{
 		return $this->subject;
 	}
