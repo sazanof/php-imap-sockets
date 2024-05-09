@@ -16,9 +16,10 @@ class Header
 			if ($this->isUtf8($matches[2])) {
 				if (preg_match('/(^|)=\?.*?\?Q|q\?/', $matches[2], $_m)) {
 					$this->charset = $this->clearCharset($_m[0]);
-					$this->value = quoted_printable_decode(
+					/*$this->value = quoted_printable_decode(
 						preg_replace('/(^|)=\?.*?\?.\?|\?=/', '', $matches[2])
-					);
+					);*/
+					$this->value = $this->imapMimeHeaderDecode($matches[2]);
 					if (!filter_var($this->value, FILTER_VALIDATE_EMAIL)) {
 						$this->value = str_replace('_', ' ', $this->value);
 					}
@@ -39,6 +40,7 @@ class Header
 					$this->value = is_string($val) ? $val : $matches[2];
 				}
 			}
+			$this->value = trim($this->value, ' ');
 			/////////////////// IN METHOD WHICH DETECT DECODING
 		} elseif (preg_match('/^(.+?): \r\n/', $headerLine, $matches)) {
 			// if comes string aka "Subject: \r\n" - no subject

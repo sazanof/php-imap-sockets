@@ -59,11 +59,19 @@ class Message
 		$this->setSubject(
 			!is_null($this->getHeaders()->getHeader('subject')) ? $this->getHeaders()->getHeader('subject')->getValue() : null
 		);
-		$this->setDate(
-			new \DateTime(
-				$this->getHeaders()->getHeader('date')->getValue()
-			)
-		);
+		try {
+			$this->setDate(
+				new \DateTime(
+					$this->getHeaders()->getHeader('date')->getValue()
+				)
+			);
+		} catch (\Exception $exception) {
+			$date = preg_replace('\\(.*\\)', '', $this->getHeaders()->getHeader('date')->getValue());
+			$this->setDate(
+				new \DateTime($date)
+			);
+		}
+
 		$this->setFrom(
 			$this->getHeaders()->getHeader('from')->getValue()
 		);
