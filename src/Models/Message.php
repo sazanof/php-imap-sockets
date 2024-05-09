@@ -55,7 +55,7 @@ class Message
 		$this->headers = $headers instanceof MessageHeadersCollection ? $headers : new MessageHeadersCollection($headers);
 		$messageId = $this->getHeaders()->getHeader('message-id')?->getValue();
 		if (is_null($messageId) && $this->getHeaders()->getHeader('resent-message-id')) {
-			$messageId = $this->getHeaders()->getHeader('resent-message-id');
+			$messageId = $this->getHeaders()->getHeader('resent-message-id')->getValue();
 		}
 		$this->setMessageId($messageId);
 		$this->setSubject(
