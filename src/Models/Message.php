@@ -60,10 +60,9 @@ class Message
 			!is_null($this->getHeaders()->getHeader('subject')) ? $this->getHeaders()->getHeader('subject')->getValue() : null
 		);
 		try {
+			$val = $this->getHeaders()->getHeader('date')?->getValue();
 			$this->setDate(
-				new \DateTime(
-					$this->getHeaders()->getHeader('date')?->getValue()
-				)
+				is_null($val) ? null : new \DateTime($val)
 			);
 		} catch (\Exception $exception) {
 			try {
@@ -510,9 +509,9 @@ class Message
 	}
 
 	/**
-	 * @param \DateTime $date
+	 * @param ?\DateTime $date
 	 */
-	public function setDate(\DateTime $date): void
+	public function setDate(?\DateTime $date): void
 	{
 		$this->date = $date;
 	}
