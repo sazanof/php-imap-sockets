@@ -53,9 +53,11 @@ class Message
 	public function setHeaders(array|MessageHeadersCollection $headers): void
 	{
 		$this->headers = $headers instanceof MessageHeadersCollection ? $headers : new MessageHeadersCollection($headers);
-		$this->setMessageId(
-			$this->getHeaders()->getHeader('message-id')?->getValue()
-		);
+		$messageId = $this->getHeaders()->getHeader('message-id')?->getValue();
+		if (is_null($messageId) && $this->getHeaders()->getHeader('resent-message-id')) {
+			$messageId = $this->getHeaders()->getHeader('resent-message-id');
+		}
+		$this->setMessageId($messageId);
 		$this->setSubject(
 			!is_null($this->getHeaders()->getHeader('subject')) ? $this->getHeaders()->getHeader('subject')->getValue() : null
 		);
@@ -318,9 +320,9 @@ class Message
 	}
 
 	/**
-	 * @return string
+	 * @return ?string
 	 */
-	public function getMessageId(): string
+	public function getMessageId(): ?string
 	{
 		return $this->messageId;
 	}
