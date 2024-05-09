@@ -67,12 +67,10 @@ class Message
 			);
 		} catch (\Exception $exception) {
 			try {
-				$date = preg_replace('\\(.*\\)', '', $this->getHeaders()->getHeader('date')->getValue());
-				if (is_string($date)) {
-					$this->setDate(
-						new \DateTime($date)
-					);
-				}
+				$date = trim(preg_replace('#\\(.*\\)#', '', $this->getHeaders()->getHeader('date')->getValue()));
+				$this->setDate(
+					new \DateTime($date)
+				);
 			} catch (\Exception $e) {
 				dd($e);
 			}
