@@ -67,9 +67,11 @@ class Message
 			);
 		} catch (\Exception $exception) {
 			$date = preg_replace('\\(.*\\)', '', $this->getHeaders()->getHeader('date')->getValue());
-			$this->setDate(
-				new \DateTime($date)
-			);
+			if (!is_null($date)) {
+				$this->setDate(
+					new \DateTime($date)
+				);
+			}
 		}
 
 		$this->setFrom(
